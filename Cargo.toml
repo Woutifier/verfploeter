@@ -1,0 +1,14 @@
+[package]
+name = "verfploeter"
+version = "0.1.0"
+authors = ["Wouter de Vries <wouter@wouter-web.nl>"]
+edition = "2018"
+
+[dependencies]
+grpcio = "0.4"
+futures = "0.1"
+protobuf = { version = "~2.0" }
+#tokio = "0.1"
+env_logger = "0.5.13"
+log = "0.4.6"
+clap = "2.32.0"

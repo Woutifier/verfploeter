@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+service Verfploeter {
+    rpc connect(SchedulingResult) returns (stream Task) {}
+}
+
+message Task {
+    int32 taskId = 1;
+}
+
+message SchedulingResult {
+
+}
