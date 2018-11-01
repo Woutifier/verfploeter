@@ -18,7 +18,7 @@
 #![allow(unused_imports)]
 #![allow(unused_results)]
 
-const METHOD_VERFPLOETER_CONNECT: ::grpcio::Method<super::verfploeter::SchedulingResult, super::verfploeter::Task> = ::grpcio::Method {
+const METHOD_VERFPLOETER_CONNECT: ::grpcio::Method<super::verfploeter::Metadata, super::verfploeter::Task> = ::grpcio::Method {
     ty: ::grpcio::MethodType::ServerStreaming,
     name: "/Verfploeter/connect",
     req_mar: ::grpcio::Marshaller { ser: ::grpcio::pb_ser, de: ::grpcio::pb_de },
@@ -36,11 +36,11 @@ impl VerfploeterClient {
         }
     }
 
-    pub fn connect_opt(&self, req: &super::verfploeter::SchedulingResult, opt: ::grpcio::CallOption) -> ::grpcio::Result<::grpcio::ClientSStreamReceiver<super::verfploeter::Task>> {
+    pub fn connect_opt(&self, req: &super::verfploeter::Metadata, opt: ::grpcio::CallOption) -> ::grpcio::Result<::grpcio::ClientSStreamReceiver<super::verfploeter::Task>> {
         self.client.server_streaming(&METHOD_VERFPLOETER_CONNECT, req, opt)
     }
 
-    pub fn connect(&self, req: &super::verfploeter::SchedulingResult) -> ::grpcio::Result<::grpcio::ClientSStreamReceiver<super::verfploeter::Task>> {
+    pub fn connect(&self, req: &super::verfploeter::Metadata) -> ::grpcio::Result<::grpcio::ClientSStreamReceiver<super::verfploeter::Task>> {
         self.connect_opt(req, ::grpcio::CallOption::default())
     }
     pub fn spawn<F>(&self, f: F) where F: ::futures::Future<Item = (), Error = ()> + Send + 'static {
@@ -49,7 +49,7 @@ impl VerfploeterClient {
 }
 
 pub trait Verfploeter {
-    fn connect(&mut self, ctx: ::grpcio::RpcContext, req: super::verfploeter::SchedulingResult, sink: ::grpcio::ServerStreamingSink<super::verfploeter::Task>);
+    fn connect(&mut self, ctx: ::grpcio::RpcContext, req: super::verfploeter::Metadata, sink: ::grpcio::ServerStreamingSink<super::verfploeter::Task>);
 }
 
 pub fn create_verfploeter<S: Verfploeter + Send + Clone + 'static>(s: S) -> ::grpcio::Service {

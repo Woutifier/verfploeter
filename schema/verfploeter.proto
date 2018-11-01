@@ -1,13 +1,25 @@
 syntax = "proto3";
 
 service Verfploeter {
-    rpc connect(SchedulingResult) returns (stream Task) {}
+    rpc connect(Metadata) returns (stream Task) {}
 }
 
 message Task {
-    int32 taskId = 1;
+    uint32 taskId = 1;
+    repeated Data data = 2;
 }
 
-message SchedulingResult {
+message Metadata {
+    string hostname = 1;
+}
 
+message Data {
+    oneof value {
+        PingV4 ping_v4 = 1;
+    }
+}
+
+message PingV4 {
+    uint32 source_address = 1;
+    repeated uint32 destination_addresses = 2;
 }
