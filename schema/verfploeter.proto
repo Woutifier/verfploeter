@@ -2,6 +2,27 @@ syntax = "proto3";
 
 service Verfploeter {
     rpc connect(Metadata) returns (stream Task) {}
+    rpc do_task(ScheduleTask) returns (Ack) {}
+    rpc list_clients(Empty) returns (ClientList) {}
+}
+
+message Empty {}
+message Ack {}
+
+message ScheduleTask {
+    Client client = 1;
+    oneof data {
+        PingV4 ping_v4 = 2;
+    }
+}
+
+message ClientList {
+    repeated Client clients = 1;
+}
+
+message Client {
+    uint32 index = 1;
+    Metadata metadata = 2;
 }
 
 message Task {

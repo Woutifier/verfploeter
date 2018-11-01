@@ -1,18 +1,19 @@
 #[macro_use]
 extern crate log;
-extern crate env_logger;
 extern crate clap;
+extern crate env_logger;
 extern crate futures;
 extern crate grpcio;
 extern crate protobuf;
 extern crate socket2;
 
+mod cli;
 mod client;
 mod schema;
 mod server;
 
 use self::schema::verfploeter::{PingV4, Task};
-use clap::{App, ArgMatches, SubCommand};
+use clap::{App, Arg, ArgMatches, SubCommand};
 use futures::*;
 use protobuf::RepeatedField;
 use std::net::Ipv4Addr;
@@ -55,6 +56,8 @@ fn main() {
     } else if let Some(client_matches) = matches.subcommand_matches("client") {
         let mut c = client::Client::new();
         c.start();
+    } else if let Some(cli_matches) = matches.subcommand_matches("cli") {
+        cli::execute(cli_matches);
     } else {
         error!("run with --help to see options");
     }
@@ -67,5 +70,21 @@ fn parse_cmd<'a>() -> ArgMatches<'a> {
         .about("Performs measurements")
         .subcommand(SubCommand::with_name("server").about("Launches the verfploeter server"))
         .subcommand(SubCommand::with_name("client").about("Launches the verfploeter client"))
+        .subcommand(
+            SubCommand::with_name("cli").about("Verfploeter CLI")
+                .subcommand(SubCommand::with_name("client-list").about("retrieves a list of currently connected clients from the server"))
+                .subcommand(SubCommand::with_name("do-verfploeter").about("performs verfploeter on the indicated client")
+                    .arg(Arg::with_name("CLIENT_INDEX").help("Sets the client to run verfploeter from (i.e. the outbound ping)")
+                    .required(true)
+                    .index(1))
+                    .arg(Arg::with_name("SOURCE_IP").help("The IP to send the pings from")
+                        .required(true)
+                        .index(2))
+                    .arg(Arg::with_name("IP_FILE").help("A file that contains IP address to ping")
+                    .required(true)
+                    .index(3))
+
+                )
+        )
         .get_matches()
 }

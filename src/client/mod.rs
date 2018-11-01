@@ -1,27 +1,27 @@
 use super::schema::verfploeter::{Metadata, PingV4};
 use super::schema::verfploeter_grpc::VerfploeterClient;
+use futures::sync::mpsc::{channel, Receiver, Sender};
 use futures::*;
 use grpcio::{ChannelBuilder, Environment};
 use std::sync::Arc;
-use futures::sync::mpsc::{channel, Sender, Receiver};
 //use std::sync::mpsc::{channel, Sender, Receiver};
 use std::thread::JoinHandle;
 
-use socket2::{Socket, Domain, Type, Protocol};
+use socket2::{Domain, Protocol, Socket, Type};
 
 use std::net::Ipv4Addr;
 use std::net::SocketAddr;
 
 #[derive(Debug)]
 enum PingTask {
-    V4{value: PingV4},
+    V4 { value: PingV4 },
 }
 
 use std::thread;
 
 pub struct Client {
     grpc_client: VerfploeterClient,
-    pinger: Pinger,
+    ping_outbound: PingOutbound,
 }
 
 impl Client {
@@ -30,65 +30,92 @@ impl Client {
         let channel = ChannelBuilder::new(env).connect("127.0.0.1:50001");
         let grpc_client = VerfploeterClient::new(channel);
         Client {
-            pinger: Pinger::new(),
+            ping_outbound: PingOutbound::new(),
             grpc_client,
-
         }
     }
 
     pub fn start(self) {
         let res = self.grpc_client.connect(&Metadata::new());
         if let Ok(stream) = res {
-            let f = stream.map({ let tx = self.pinger.pinger_tx; move |mut i| {
-                if i.has_ping_v4() {
-                    tx.clone().send(PingTask::V4{value: i.take_ping_v4()}).wait().unwrap();
-                }
-            }}).map_err(|_| ()).collect().map(|_| ()).map_err(|_| ());
+            let f = stream
+                .map({
+                    let tx = self.ping_outbound.tx;
+                    move |mut i| {
+                        if i.has_ping_v4() {
+                            tx.clone()
+                                .send(PingTask::V4 {
+                                    value: i.take_ping_v4(),
+                                })
+                                .wait()
+                                .unwrap();
+                        }
+                    }
+                })
+                .map_err(|_| ())
+                .collect()
+                .map(|_| ())
+                .map_err(|_| ());
 
             self.grpc_client.spawn(f);
-            self.pinger.handle.join().unwrap();
+            self.ping_outbound.handle.join().unwrap();
             debug!("exiting");
         }
     }
 }
 
-struct Pinger {
-    pub pinger_tx: Sender<PingTask>,
-    pub handle: JoinHandle<()>
+struct PingOutbound {
+    pub tx: Sender<PingTask>,
+    pub handle: JoinHandle<()>,
 }
 
-impl Pinger {
-    pub fn new() -> Pinger {
-        let (pinger_tx, pinger_rx): (Sender<PingTask>, Receiver<PingTask>) = channel(1);
+impl PingOutbound {
+    pub fn new() -> PingOutbound {
+        let (tx, rx): (Sender<PingTask>, Receiver<PingTask>) = channel(1);
 
-        let handle = thread::spawn(move ||
-            {
-                pinger_rx.map(|i|
-                    Pinger::perform_ping(i)
-                ).map_err(|_| ()).wait().for_each(drop);
-            }
-        );
+        let handle = thread::spawn(move || {
+            rx.map(|i| PingOutbound::perform_ping(i))
+                .map_err(|_| ())
+                .wait()
+                .for_each(drop);
+        });
 
-        Pinger{
-            pinger_tx, handle
-        }
+        PingOutbound { tx, handle }
     }
 
     fn perform_ping(task: PingTask) {
         match task {
-            PingTask::V4{value} => {
+            PingTask::V4 { value } => {
                 let bindaddress = format!("{}:0", Ipv4Addr::from(value.source_address).to_string());
-                let socket = Socket::new(Domain::ipv4(), Type::raw(), Some(Protocol::icmpv4())).unwrap();
-                socket.bind(&bindaddress.to_string().parse::<SocketAddr>().unwrap().into()).unwrap();
+                let socket =
+                    Socket::new(Domain::ipv4(), Type::raw(), Some(Protocol::icmpv4())).unwrap();
+                socket
+                    .bind(
+                        &bindaddress
+                            .to_string()
+                            .parse::<SocketAddr>()
+                            .unwrap()
+                            .into(),
+                    )
+                    .unwrap();
                 socket.listen(128);
 
                 for ip in value.destination_addresses {
                     let bindaddress = format!("{}:0", Ipv4Addr::from(ip).to_string());
                     let icmp = ICMP4Header::echo_request(1, 2);
-                    socket.send_to(&icmp.to_byte_array(), &bindaddress.to_string().parse::<SocketAddr>().unwrap().into()).expect("unable to call send_to on socket");
+                    socket
+                        .send_to(
+                            &icmp.to_byte_array(),
+                            &bindaddress
+                                .to_string()
+                                .parse::<SocketAddr>()
+                                .unwrap()
+                                .into(),
+                        )
+                        .expect("unable to call send_to on socket");
                 }
             }
-            _ => unimplemented!()
+            _ => unimplemented!(),
         }
     }
 }
@@ -132,8 +159,8 @@ impl ICMP4Header {
         let mut size = buffer.len();
         let mut checksum: u32 = 0;
         while size > 0 {
-            let word = (buffer[buffer.len() - size] as u16) << 8 |
-                (buffer[buffer.len() - size + 1]) as u16;
+            let word = (buffer[buffer.len() - size] as u16) << 8
+                | (buffer[buffer.len() - size + 1]) as u16;
             checksum += word as u32;
             size -= 2;
         }

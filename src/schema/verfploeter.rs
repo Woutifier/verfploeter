@@ -22,6 +22,897 @@ use protobuf::Message as Message_imported_for_functions;
 use protobuf::ProtobufEnum as ProtobufEnum_imported_for_functions;
 
 #[derive(PartialEq,Clone,Default)]
+pub struct Empty {
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl Empty {
+    pub fn new() -> Empty {
+        ::std::default::Default::default()
+    }
+}
+
+impl ::protobuf::Message for Empty {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &::std::any::Any {
+        self as &::std::any::Any
+    }
+    fn as_any_mut(&mut self) -> &mut ::std::any::Any {
+        self as &mut ::std::any::Any
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<::std::any::Any> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> Empty {
+        Empty::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const ::protobuf::reflect::MessageDescriptor,
+        };
+        unsafe {
+            descriptor.get(|| {
+                let fields = ::std::vec::Vec::new();
+                ::protobuf::reflect::MessageDescriptor::new::<Empty>(
+                    "Empty",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static Empty {
+        static mut instance: ::protobuf::lazy::Lazy<Empty> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const Empty,
+        };
+        unsafe {
+            instance.get(Empty::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for Empty {
+    fn clear(&mut self) {
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for Empty {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for Empty {
+    fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
+        ::protobuf::reflect::ProtobufValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct Ack {
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl Ack {
+    pub fn new() -> Ack {
+        ::std::default::Default::default()
+    }
+}
+
+impl ::protobuf::Message for Ack {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &::std::any::Any {
+        self as &::std::any::Any
+    }
+    fn as_any_mut(&mut self) -> &mut ::std::any::Any {
+        self as &mut ::std::any::Any
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<::std::any::Any> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> Ack {
+        Ack::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const ::protobuf::reflect::MessageDescriptor,
+        };
+        unsafe {
+            descriptor.get(|| {
+                let fields = ::std::vec::Vec::new();
+                ::protobuf::reflect::MessageDescriptor::new::<Ack>(
+                    "Ack",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static Ack {
+        static mut instance: ::protobuf::lazy::Lazy<Ack> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const Ack,
+        };
+        unsafe {
+            instance.get(Ack::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for Ack {
+    fn clear(&mut self) {
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for Ack {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for Ack {
+    fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
+        ::protobuf::reflect::ProtobufValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct ScheduleTask {
+    // message fields
+    pub client: ::protobuf::SingularPtrField<Client>,
+    // message oneof groups
+    pub data: ::std::option::Option<ScheduleTask_oneof_data>,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+#[derive(Clone,PartialEq)]
+pub enum ScheduleTask_oneof_data {
+    ping_v4(PingV4),
+}
+
+impl ScheduleTask {
+    pub fn new() -> ScheduleTask {
+        ::std::default::Default::default()
+    }
+
+    // .Client client = 1;
+
+    pub fn clear_client(&mut self) {
+        self.client.clear();
+    }
+
+    pub fn has_client(&self) -> bool {
+        self.client.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_client(&mut self, v: Client) {
+        self.client = ::protobuf::SingularPtrField::some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_client(&mut self) -> &mut Client {
+        if self.client.is_none() {
+            self.client.set_default();
+        }
+        self.client.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_client(&mut self) -> Client {
+        self.client.take().unwrap_or_else(|| Client::new())
+    }
+
+    pub fn get_client(&self) -> &Client {
+        self.client.as_ref().unwrap_or_else(|| Client::default_instance())
+    }
+
+    // .PingV4 ping_v4 = 2;
+
+    pub fn clear_ping_v4(&mut self) {
+        self.data = ::std::option::Option::None;
+    }
+
+    pub fn has_ping_v4(&self) -> bool {
+        match self.data {
+            ::std::option::Option::Some(ScheduleTask_oneof_data::ping_v4(..)) => true,
+            _ => false,
+        }
+    }
+
+    // Param is passed by value, moved
+    pub fn set_ping_v4(&mut self, v: PingV4) {
+        self.data = ::std::option::Option::Some(ScheduleTask_oneof_data::ping_v4(v))
+    }
+
+    // Mutable pointer to the field.
+    pub fn mut_ping_v4(&mut self) -> &mut PingV4 {
+        if let ::std::option::Option::Some(ScheduleTask_oneof_data::ping_v4(_)) = self.data {
+        } else {
+            self.data = ::std::option::Option::Some(ScheduleTask_oneof_data::ping_v4(PingV4::new()));
+        }
+        match self.data {
+            ::std::option::Option::Some(ScheduleTask_oneof_data::ping_v4(ref mut v)) => v,
+            _ => panic!(),
+        }
+    }
+
+    // Take field
+    pub fn take_ping_v4(&mut self) -> PingV4 {
+        if self.has_ping_v4() {
+            match self.data.take() {
+                ::std::option::Option::Some(ScheduleTask_oneof_data::ping_v4(v)) => v,
+                _ => panic!(),
+            }
+        } else {
+            PingV4::new()
+        }
+    }
+
+    pub fn get_ping_v4(&self) -> &PingV4 {
+        match self.data {
+            ::std::option::Option::Some(ScheduleTask_oneof_data::ping_v4(ref v)) => v,
+            _ => PingV4::default_instance(),
+        }
+    }
+}
+
+impl ::protobuf::Message for ScheduleTask {
+    fn is_initialized(&self) -> bool {
+        for v in &self.client {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        if let Some(ScheduleTask_oneof_data::ping_v4(ref v)) = self.data {
+            if !v.is_initialized() {
+                return false;
+            }
+        }
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.client)?;
+                },
+                2 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    self.data = ::std::option::Option::Some(ScheduleTask_oneof_data::ping_v4(is.read_message()?));
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if let Some(ref v) = self.client.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        }
+        if let ::std::option::Option::Some(ref v) = self.data {
+            match v {
+                &ScheduleTask_oneof_data::ping_v4(ref v) => {
+                    let len = v.compute_size();
+                    my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+                },
+            };
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
+        if let Some(ref v) = self.client.as_ref() {
+            os.write_tag(1, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        }
+        if let ::std::option::Option::Some(ref v) = self.data {
+            match v {
+                &ScheduleTask_oneof_data::ping_v4(ref v) => {
+                    os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+                    os.write_raw_varint32(v.get_cached_size())?;
+                    v.write_to_with_cached_sizes(os)?;
+                },
+            };
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &::std::any::Any {
+        self as &::std::any::Any
+    }
+    fn as_any_mut(&mut self) -> &mut ::std::any::Any {
+        self as &mut ::std::any::Any
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<::std::any::Any> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> ScheduleTask {
+        ScheduleTask::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const ::protobuf::reflect::MessageDescriptor,
+        };
+        unsafe {
+            descriptor.get(|| {
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<Client>>(
+                    "client",
+                    |m: &ScheduleTask| { &m.client },
+                    |m: &mut ScheduleTask| { &mut m.client },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_singular_message_accessor::<_, PingV4>(
+                    "ping_v4",
+                    ScheduleTask::has_ping_v4,
+                    ScheduleTask::get_ping_v4,
+                ));
+                ::protobuf::reflect::MessageDescriptor::new::<ScheduleTask>(
+                    "ScheduleTask",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static ScheduleTask {
+        static mut instance: ::protobuf::lazy::Lazy<ScheduleTask> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const ScheduleTask,
+        };
+        unsafe {
+            instance.get(ScheduleTask::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for ScheduleTask {
+    fn clear(&mut self) {
+        self.clear_client();
+        self.clear_ping_v4();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for ScheduleTask {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for ScheduleTask {
+    fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
+        ::protobuf::reflect::ProtobufValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct ClientList {
+    // message fields
+    pub clients: ::protobuf::RepeatedField<Client>,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl ClientList {
+    pub fn new() -> ClientList {
+        ::std::default::Default::default()
+    }
+
+    // repeated .Client clients = 1;
+
+    pub fn clear_clients(&mut self) {
+        self.clients.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_clients(&mut self, v: ::protobuf::RepeatedField<Client>) {
+        self.clients = v;
+    }
+
+    // Mutable pointer to the field.
+    pub fn mut_clients(&mut self) -> &mut ::protobuf::RepeatedField<Client> {
+        &mut self.clients
+    }
+
+    // Take field
+    pub fn take_clients(&mut self) -> ::protobuf::RepeatedField<Client> {
+        ::std::mem::replace(&mut self.clients, ::protobuf::RepeatedField::new())
+    }
+
+    pub fn get_clients(&self) -> &[Client] {
+        &self.clients
+    }
+}
+
+impl ::protobuf::Message for ClientList {
+    fn is_initialized(&self) -> bool {
+        for v in &self.clients {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.clients)?;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        for value in &self.clients {
+            let len = value.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        };
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
+        for v in &self.clients {
+            os.write_tag(1, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        };
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &::std::any::Any {
+        self as &::std::any::Any
+    }
+    fn as_any_mut(&mut self) -> &mut ::std::any::Any {
+        self as &mut ::std::any::Any
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<::std::any::Any> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> ClientList {
+        ClientList::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const ::protobuf::reflect::MessageDescriptor,
+        };
+        unsafe {
+            descriptor.get(|| {
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<Client>>(
+                    "clients",
+                    |m: &ClientList| { &m.clients },
+                    |m: &mut ClientList| { &mut m.clients },
+                ));
+                ::protobuf::reflect::MessageDescriptor::new::<ClientList>(
+                    "ClientList",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static ClientList {
+        static mut instance: ::protobuf::lazy::Lazy<ClientList> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const ClientList,
+        };
+        unsafe {
+            instance.get(ClientList::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for ClientList {
+    fn clear(&mut self) {
+        self.clear_clients();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for ClientList {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for ClientList {
+    fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
+        ::protobuf::reflect::ProtobufValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct Client {
+    // message fields
+    pub index: u32,
+    pub metadata: ::protobuf::SingularPtrField<Metadata>,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl Client {
+    pub fn new() -> Client {
+        ::std::default::Default::default()
+    }
+
+    // uint32 index = 1;
+
+    pub fn clear_index(&mut self) {
+        self.index = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_index(&mut self, v: u32) {
+        self.index = v;
+    }
+
+    pub fn get_index(&self) -> u32 {
+        self.index
+    }
+
+    // .Metadata metadata = 2;
+
+    pub fn clear_metadata(&mut self) {
+        self.metadata.clear();
+    }
+
+    pub fn has_metadata(&self) -> bool {
+        self.metadata.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_metadata(&mut self, v: Metadata) {
+        self.metadata = ::protobuf::SingularPtrField::some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_metadata(&mut self) -> &mut Metadata {
+        if self.metadata.is_none() {
+            self.metadata.set_default();
+        }
+        self.metadata.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_metadata(&mut self) -> Metadata {
+        self.metadata.take().unwrap_or_else(|| Metadata::new())
+    }
+
+    pub fn get_metadata(&self) -> &Metadata {
+        self.metadata.as_ref().unwrap_or_else(|| Metadata::default_instance())
+    }
+}
+
+impl ::protobuf::Message for Client {
+    fn is_initialized(&self) -> bool {
+        for v in &self.metadata {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.index = tmp;
+                },
+                2 => {
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.metadata)?;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.index != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.index, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if let Some(ref v) = self.metadata.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
+        if self.index != 0 {
+            os.write_uint32(1, self.index)?;
+        }
+        if let Some(ref v) = self.metadata.as_ref() {
+            os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &::std::any::Any {
+        self as &::std::any::Any
+    }
+    fn as_any_mut(&mut self) -> &mut ::std::any::Any {
+        self as &mut ::std::any::Any
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<::std::any::Any> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> Client {
+        Client::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const ::protobuf::reflect::MessageDescriptor,
+        };
+        unsafe {
+            descriptor.get(|| {
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "index",
+                    |m: &Client| { &m.index },
+                    |m: &mut Client| { &mut m.index },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<Metadata>>(
+                    "metadata",
+                    |m: &Client| { &m.metadata },
+                    |m: &mut Client| { &mut m.metadata },
+                ));
+                ::protobuf::reflect::MessageDescriptor::new::<Client>(
+                    "Client",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static Client {
+        static mut instance: ::protobuf::lazy::Lazy<Client> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const Client,
+        };
+        unsafe {
+            instance.get(Client::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for Client {
+    fn clear(&mut self) {
+        self.clear_index();
+        self.clear_metadata();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for Client {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for Client {
+    fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
+        ::protobuf::reflect::ProtobufValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
 pub struct Task {
     // message fields
     pub taskId: u32,
@@ -628,40 +1519,75 @@ impl ::protobuf::reflect::ProtobufValue for PingV4 {
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\x18schema/verfploeter.proto\"J\n\x04Task\x12\x16\n\x06taskId\x18\x01\
-    \x20\x01(\rR\x06taskId\x12\"\n\x07ping_v4\x18\x02\x20\x01(\x0b2\x07.Ping\
-    V4H\0R\x06pingV4B\x06\n\x04data\"&\n\x08Metadata\x12\x1a\n\x08hostname\
-    \x18\x01\x20\x01(\tR\x08hostname\"d\n\x06PingV4\x12%\n\x0esource_address\
-    \x18\x01\x20\x01(\rR\rsourceAddress\x123\n\x15destination_addresses\x18\
-    \x02\x20\x03(\rR\x14destinationAddresses2.\n\x0bVerfploeter\x12\x1f\n\
-    \x07connect\x12\t.Metadata\x1a\x05.Task\"\00\x01J\xa1\x04\n\x06\x12\x04\
-    \0\0\x14\x01\n\x08\n\x01\x0c\x12\x03\0\0\x12\n\n\n\x02\x06\0\x12\x04\x02\
-    \0\x04\x01\n\n\n\x03\x06\0\x01\x12\x03\x02\x08\x13\n\x0b\n\x04\x06\0\x02\
-    \0\x12\x03\x03\x042\n\x0c\n\x05\x06\0\x02\0\x01\x12\x03\x03\x08\x0f\n\
-    \x0c\n\x05\x06\0\x02\0\x02\x12\x03\x03\x10\x18\n\x0c\n\x05\x06\0\x02\0\
-    \x06\x12\x03\x03#)\n\x0c\n\x05\x06\0\x02\0\x03\x12\x03\x03*.\n\n\n\x02\
-    \x04\0\x12\x04\x06\0\x0b\x01\n\n\n\x03\x04\0\x01\x12\x03\x06\x08\x0c\n\
-    \x0b\n\x04\x04\0\x02\0\x12\x03\x07\x04\x16\n\r\n\x05\x04\0\x02\0\x04\x12\
-    \x04\x07\x04\x06\x0e\n\x0c\n\x05\x04\0\x02\0\x05\x12\x03\x07\x04\n\n\x0c\
-    \n\x05\x04\0\x02\0\x01\x12\x03\x07\x0b\x11\n\x0c\n\x05\x04\0\x02\0\x03\
-    \x12\x03\x07\x14\x15\n\x0c\n\x04\x04\0\x08\0\x12\x04\x08\x04\n\x05\n\x0c\
-    \n\x05\x04\0\x08\0\x01\x12\x03\x08\n\x0e\n\x0b\n\x04\x04\0\x02\x01\x12\
-    \x03\t\x08\x1b\n\x0c\n\x05\x04\0\x02\x01\x06\x12\x03\t\x08\x0e\n\x0c\n\
-    \x05\x04\0\x02\x01\x01\x12\x03\t\x0f\x16\n\x0c\n\x05\x04\0\x02\x01\x03\
-    \x12\x03\t\x19\x1a\n\n\n\x02\x04\x01\x12\x04\r\0\x0f\x01\n\n\n\x03\x04\
-    \x01\x01\x12\x03\r\x08\x10\n\x0b\n\x04\x04\x01\x02\0\x12\x03\x0e\x04\x18\
-    \n\r\n\x05\x04\x01\x02\0\x04\x12\x04\x0e\x04\r\x12\n\x0c\n\x05\x04\x01\
-    \x02\0\x05\x12\x03\x0e\x04\n\n\x0c\n\x05\x04\x01\x02\0\x01\x12\x03\x0e\
-    \x0b\x13\n\x0c\n\x05\x04\x01\x02\0\x03\x12\x03\x0e\x16\x17\n\n\n\x02\x04\
-    \x02\x12\x04\x11\0\x14\x01\n\n\n\x03\x04\x02\x01\x12\x03\x11\x08\x0e\n\
-    \x0b\n\x04\x04\x02\x02\0\x12\x03\x12\x04\x1e\n\r\n\x05\x04\x02\x02\0\x04\
-    \x12\x04\x12\x04\x11\x10\n\x0c\n\x05\x04\x02\x02\0\x05\x12\x03\x12\x04\n\
-    \n\x0c\n\x05\x04\x02\x02\0\x01\x12\x03\x12\x0b\x19\n\x0c\n\x05\x04\x02\
-    \x02\0\x03\x12\x03\x12\x1c\x1d\n\x0b\n\x04\x04\x02\x02\x01\x12\x03\x13\
-    \x04.\n\x0c\n\x05\x04\x02\x02\x01\x04\x12\x03\x13\x04\x0c\n\x0c\n\x05\
-    \x04\x02\x02\x01\x05\x12\x03\x13\r\x13\n\x0c\n\x05\x04\x02\x02\x01\x01\
-    \x12\x03\x13\x14)\n\x0c\n\x05\x04\x02\x02\x01\x03\x12\x03\x13,-b\x06prot\
-    o3\
+    \n\x18schema/verfploeter.proto\"\x07\n\x05Empty\"\x05\n\x03Ack\"[\n\x0cS\
+    cheduleTask\x12\x1f\n\x06client\x18\x01\x20\x01(\x0b2\x07.ClientR\x06cli\
+    ent\x12\"\n\x07ping_v4\x18\x02\x20\x01(\x0b2\x07.PingV4H\0R\x06pingV4B\
+    \x06\n\x04data\"/\n\nClientList\x12!\n\x07clients\x18\x01\x20\x03(\x0b2\
+    \x07.ClientR\x07clients\"E\n\x06Client\x12\x14\n\x05index\x18\x01\x20\
+    \x01(\rR\x05index\x12%\n\x08metadata\x18\x02\x20\x01(\x0b2\t.MetadataR\
+    \x08metadata\"J\n\x04Task\x12\x16\n\x06taskId\x18\x01\x20\x01(\rR\x06tas\
+    kId\x12\"\n\x07ping_v4\x18\x02\x20\x01(\x0b2\x07.PingV4H\0R\x06pingV4B\
+    \x06\n\x04data\"&\n\x08Metadata\x12\x1a\n\x08hostname\x18\x01\x20\x01(\t\
+    R\x08hostname\"d\n\x06PingV4\x12%\n\x0esource_address\x18\x01\x20\x01(\r\
+    R\rsourceAddress\x123\n\x15destination_addresses\x18\x02\x20\x03(\rR\x14\
+    destinationAddresses2w\n\x0bVerfploeter\x12\x1f\n\x07connect\x12\t.Metad\
+    ata\x1a\x05.Task\"\00\x01\x12\x20\n\x07do_task\x12\r.ScheduleTask\x1a\
+    \x04.Ack\"\0\x12%\n\x0clist_clients\x12\x06.Empty\x1a\x0b.ClientList\"\0\
+    J\xef\x08\n\x06\x12\x04\0\0)\x01\n\x08\n\x01\x0c\x12\x03\0\0\x12\n\n\n\
+    \x02\x06\0\x12\x04\x02\0\x06\x01\n\n\n\x03\x06\0\x01\x12\x03\x02\x08\x13\
+    \n\x0b\n\x04\x06\0\x02\0\x12\x03\x03\x042\n\x0c\n\x05\x06\0\x02\0\x01\
+    \x12\x03\x03\x08\x0f\n\x0c\n\x05\x06\0\x02\0\x02\x12\x03\x03\x10\x18\n\
+    \x0c\n\x05\x06\0\x02\0\x06\x12\x03\x03#)\n\x0c\n\x05\x06\0\x02\0\x03\x12\
+    \x03\x03*.\n\x0b\n\x04\x06\0\x02\x01\x12\x03\x04\x04.\n\x0c\n\x05\x06\0\
+    \x02\x01\x01\x12\x03\x04\x08\x0f\n\x0c\n\x05\x06\0\x02\x01\x02\x12\x03\
+    \x04\x10\x1c\n\x0c\n\x05\x06\0\x02\x01\x03\x12\x03\x04'*\n\x0b\n\x04\x06\
+    \0\x02\x02\x12\x03\x05\x043\n\x0c\n\x05\x06\0\x02\x02\x01\x12\x03\x05\
+    \x08\x14\n\x0c\n\x05\x06\0\x02\x02\x02\x12\x03\x05\x15\x1a\n\x0c\n\x05\
+    \x06\0\x02\x02\x03\x12\x03\x05%/\n\t\n\x02\x04\0\x12\x03\x08\0\x10\n\n\n\
+    \x03\x04\0\x01\x12\x03\x08\x08\r\n\t\n\x02\x04\x01\x12\x03\t\0\x0e\n\n\n\
+    \x03\x04\x01\x01\x12\x03\t\x08\x0b\n\n\n\x02\x04\x02\x12\x04\x0b\0\x10\
+    \x01\n\n\n\x03\x04\x02\x01\x12\x03\x0b\x08\x14\n\x0b\n\x04\x04\x02\x02\0\
+    \x12\x03\x0c\x04\x16\n\r\n\x05\x04\x02\x02\0\x04\x12\x04\x0c\x04\x0b\x16\
+    \n\x0c\n\x05\x04\x02\x02\0\x06\x12\x03\x0c\x04\n\n\x0c\n\x05\x04\x02\x02\
+    \0\x01\x12\x03\x0c\x0b\x11\n\x0c\n\x05\x04\x02\x02\0\x03\x12\x03\x0c\x14\
+    \x15\n\x0c\n\x04\x04\x02\x08\0\x12\x04\r\x04\x0f\x05\n\x0c\n\x05\x04\x02\
+    \x08\0\x01\x12\x03\r\n\x0e\n\x0b\n\x04\x04\x02\x02\x01\x12\x03\x0e\x08\
+    \x1b\n\x0c\n\x05\x04\x02\x02\x01\x06\x12\x03\x0e\x08\x0e\n\x0c\n\x05\x04\
+    \x02\x02\x01\x01\x12\x03\x0e\x0f\x16\n\x0c\n\x05\x04\x02\x02\x01\x03\x12\
+    \x03\x0e\x19\x1a\n\n\n\x02\x04\x03\x12\x04\x12\0\x14\x01\n\n\n\x03\x04\
+    \x03\x01\x12\x03\x12\x08\x12\n\x0b\n\x04\x04\x03\x02\0\x12\x03\x13\x04\
+    \x20\n\x0c\n\x05\x04\x03\x02\0\x04\x12\x03\x13\x04\x0c\n\x0c\n\x05\x04\
+    \x03\x02\0\x06\x12\x03\x13\r\x13\n\x0c\n\x05\x04\x03\x02\0\x01\x12\x03\
+    \x13\x14\x1b\n\x0c\n\x05\x04\x03\x02\0\x03\x12\x03\x13\x1e\x1f\n\n\n\x02\
+    \x04\x04\x12\x04\x16\0\x19\x01\n\n\n\x03\x04\x04\x01\x12\x03\x16\x08\x0e\
+    \n\x0b\n\x04\x04\x04\x02\0\x12\x03\x17\x04\x15\n\r\n\x05\x04\x04\x02\0\
+    \x04\x12\x04\x17\x04\x16\x10\n\x0c\n\x05\x04\x04\x02\0\x05\x12\x03\x17\
+    \x04\n\n\x0c\n\x05\x04\x04\x02\0\x01\x12\x03\x17\x0b\x10\n\x0c\n\x05\x04\
+    \x04\x02\0\x03\x12\x03\x17\x13\x14\n\x0b\n\x04\x04\x04\x02\x01\x12\x03\
+    \x18\x04\x1a\n\r\n\x05\x04\x04\x02\x01\x04\x12\x04\x18\x04\x17\x15\n\x0c\
+    \n\x05\x04\x04\x02\x01\x06\x12\x03\x18\x04\x0c\n\x0c\n\x05\x04\x04\x02\
+    \x01\x01\x12\x03\x18\r\x15\n\x0c\n\x05\x04\x04\x02\x01\x03\x12\x03\x18\
+    \x18\x19\n\n\n\x02\x04\x05\x12\x04\x1b\0\x20\x01\n\n\n\x03\x04\x05\x01\
+    \x12\x03\x1b\x08\x0c\n\x0b\n\x04\x04\x05\x02\0\x12\x03\x1c\x04\x16\n\r\n\
+    \x05\x04\x05\x02\0\x04\x12\x04\x1c\x04\x1b\x0e\n\x0c\n\x05\x04\x05\x02\0\
+    \x05\x12\x03\x1c\x04\n\n\x0c\n\x05\x04\x05\x02\0\x01\x12\x03\x1c\x0b\x11\
+    \n\x0c\n\x05\x04\x05\x02\0\x03\x12\x03\x1c\x14\x15\n\x0c\n\x04\x04\x05\
+    \x08\0\x12\x04\x1d\x04\x1f\x05\n\x0c\n\x05\x04\x05\x08\0\x01\x12\x03\x1d\
+    \n\x0e\n\x0b\n\x04\x04\x05\x02\x01\x12\x03\x1e\x08\x1b\n\x0c\n\x05\x04\
+    \x05\x02\x01\x06\x12\x03\x1e\x08\x0e\n\x0c\n\x05\x04\x05\x02\x01\x01\x12\
+    \x03\x1e\x0f\x16\n\x0c\n\x05\x04\x05\x02\x01\x03\x12\x03\x1e\x19\x1a\n\n\
+    \n\x02\x04\x06\x12\x04\"\0$\x01\n\n\n\x03\x04\x06\x01\x12\x03\"\x08\x10\
+    \n\x0b\n\x04\x04\x06\x02\0\x12\x03#\x04\x18\n\r\n\x05\x04\x06\x02\0\x04\
+    \x12\x04#\x04\"\x12\n\x0c\n\x05\x04\x06\x02\0\x05\x12\x03#\x04\n\n\x0c\n\
+    \x05\x04\x06\x02\0\x01\x12\x03#\x0b\x13\n\x0c\n\x05\x04\x06\x02\0\x03\
+    \x12\x03#\x16\x17\n\n\n\x02\x04\x07\x12\x04&\0)\x01\n\n\n\x03\x04\x07\
+    \x01\x12\x03&\x08\x0e\n\x0b\n\x04\x04\x07\x02\0\x12\x03'\x04\x1e\n\r\n\
+    \x05\x04\x07\x02\0\x04\x12\x04'\x04&\x10\n\x0c\n\x05\x04\x07\x02\0\x05\
+    \x12\x03'\x04\n\n\x0c\n\x05\x04\x07\x02\0\x01\x12\x03'\x0b\x19\n\x0c\n\
+    \x05\x04\x07\x02\0\x03\x12\x03'\x1c\x1d\n\x0b\n\x04\x04\x07\x02\x01\x12\
+    \x03(\x04.\n\x0c\n\x05\x04\x07\x02\x01\x04\x12\x03(\x04\x0c\n\x0c\n\x05\
+    \x04\x07\x02\x01\x05\x12\x03(\r\x13\n\x0c\n\x05\x04\x07\x02\x01\x01\x12\
+    \x03(\x14)\n\x0c\n\x05\x04\x07\x02\x01\x03\x12\x03(,-b\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy {
