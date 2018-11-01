@@ -6,17 +6,13 @@ service Verfploeter {
 
 message Task {
     uint32 taskId = 1;
-    repeated Data data = 2;
+    oneof data {
+        PingV4 ping_v4 = 2;
+    }
 }
 
 message Metadata {
     string hostname = 1;
-}
-
-message Data {
-    oneof value {
-        PingV4 ping_v4 = 1;
-    }
 }
 
 message PingV4 {

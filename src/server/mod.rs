@@ -71,13 +71,17 @@ impl Verfploeter for VerfploeterService {
 
         // Forward all tasks from the channel to the sink, and unregister from the connection
         // manager on error or completion.
-        let connection_manager1 = self.connection_manager.clone();
-        let connection_manager2 = self.connection_manager.clone();
         let f = rx
             .map(|item| (item, grpcio::WriteFlags::default()))
             .forward(sink.sink_map_err(|_| ()))
-            .map(move |_| connection_manager1.unregister_connection(connection_id))
-            .map_err(move |_| connection_manager2.unregister_connection(connection_id));
+            .map({
+                let cm = self.connection_manager.clone();
+                move |_| cm.unregister_connection(connection_id)
+            })
+            .map_err({
+                let cm = self.connection_manager.clone();
+                move |_| cm.unregister_connection(connection_id)
+            });
 
         ctx.spawn(f);
     }
@@ -102,7 +106,7 @@ impl ConnectionManager {
         let mut hashmap = self.connections.lock().unwrap();
         hashmap.insert(connection_id, connection);
         debug!(
-            "(connection manager) added connection to list with id {}, connection count: {}",
+            "added connection to list with id {}, connection count: {}",
             connection_id,
             hashmap.len()
         );
@@ -112,7 +116,7 @@ impl ConnectionManager {
         let mut hashmap = self.connections.lock().unwrap();
         hashmap.remove(&connection_id);
         debug!(
-            "(connection manager) removed connection from list with id {}, connection count: {}",
+            "removed connection from list with id {}, connection count: {}",
             connection_id,
             hashmap.len()
         );

@@ -1,20 +1,21 @@
 #[macro_use]
 extern crate log;
 extern crate env_logger;
-
 extern crate clap;
 extern crate futures;
 extern crate grpcio;
 extern crate protobuf;
+extern crate socket2;
 
 mod client;
 mod schema;
 mod server;
 
-use self::schema::verfploeter::{Data, PingV4, Task};
+use self::schema::verfploeter::{PingV4, Task};
 use clap::{App, ArgMatches, SubCommand};
 use futures::*;
 use protobuf::RepeatedField;
+use std::net::Ipv4Addr;
 use std::thread;
 use std::time::Duration;
 
@@ -39,19 +40,20 @@ fn main() {
                     let mut t = Task::new();
                     t.taskId = counter;
                     counter += 1;
-                    let mut d = Data::new();
                     let mut p = PingV4::new();
-                    p.source_address = 12345;
-                    p.destination_addresses = vec![1234, 5678];
-                    d.set_ping_v4(p);
-                    t.set_data(RepeatedField::from_vec(vec![d]));
+                    p.source_address = Ipv4Addr::from([130, 89, 12, 10]).into();
+                    p.destination_addresses = vec![
+                        Ipv4Addr::from([8, 8, 8, 8]).into(),
+                        Ipv4Addr::from([1, 1, 1, 1]).into(),
+                    ];
+                    t.set_ping_v4(p);
                     v.channel.clone().send(t).wait().unwrap();
                 }
             }
             thread::sleep(Duration::from_secs(1));
         }
     } else if let Some(client_matches) = matches.subcommand_matches("client") {
-        let c = client::Client::new();
+        let mut c = client::Client::new();
         c.start();
     } else {
         error!("run with --help to see options");

@@ -25,10 +25,16 @@ use protobuf::ProtobufEnum as ProtobufEnum_imported_for_functions;
 pub struct Task {
     // message fields
     pub taskId: u32,
-    pub data: ::protobuf::RepeatedField<Data>,
+    // message oneof groups
+    pub data: ::std::option::Option<Task_oneof_data>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
+}
+
+#[derive(Clone,PartialEq)]
+pub enum Task_oneof_data {
+    ping_v4(PingV4),
 }
 
 impl Task {
@@ -51,39 +57,63 @@ impl Task {
         self.taskId
     }
 
-    // repeated .Data data = 2;
+    // .PingV4 ping_v4 = 2;
 
-    pub fn clear_data(&mut self) {
-        self.data.clear();
+    pub fn clear_ping_v4(&mut self) {
+        self.data = ::std::option::Option::None;
+    }
+
+    pub fn has_ping_v4(&self) -> bool {
+        match self.data {
+            ::std::option::Option::Some(Task_oneof_data::ping_v4(..)) => true,
+            _ => false,
+        }
     }
 
     // Param is passed by value, moved
-    pub fn set_data(&mut self, v: ::protobuf::RepeatedField<Data>) {
-        self.data = v;
+    pub fn set_ping_v4(&mut self, v: PingV4) {
+        self.data = ::std::option::Option::Some(Task_oneof_data::ping_v4(v))
     }
 
     // Mutable pointer to the field.
-    pub fn mut_data(&mut self) -> &mut ::protobuf::RepeatedField<Data> {
-        &mut self.data
+    pub fn mut_ping_v4(&mut self) -> &mut PingV4 {
+        if let ::std::option::Option::Some(Task_oneof_data::ping_v4(_)) = self.data {
+        } else {
+            self.data = ::std::option::Option::Some(Task_oneof_data::ping_v4(PingV4::new()));
+        }
+        match self.data {
+            ::std::option::Option::Some(Task_oneof_data::ping_v4(ref mut v)) => v,
+            _ => panic!(),
+        }
     }
 
     // Take field
-    pub fn take_data(&mut self) -> ::protobuf::RepeatedField<Data> {
-        ::std::mem::replace(&mut self.data, ::protobuf::RepeatedField::new())
+    pub fn take_ping_v4(&mut self) -> PingV4 {
+        if self.has_ping_v4() {
+            match self.data.take() {
+                ::std::option::Option::Some(Task_oneof_data::ping_v4(v)) => v,
+                _ => panic!(),
+            }
+        } else {
+            PingV4::new()
+        }
     }
 
-    pub fn get_data(&self) -> &[Data] {
-        &self.data
+    pub fn get_ping_v4(&self) -> &PingV4 {
+        match self.data {
+            ::std::option::Option::Some(Task_oneof_data::ping_v4(ref v)) => v,
+            _ => PingV4::default_instance(),
+        }
     }
 }
 
 impl ::protobuf::Message for Task {
     fn is_initialized(&self) -> bool {
-        for v in &self.data {
+        if let Some(Task_oneof_data::ping_v4(ref v)) = self.data {
             if !v.is_initialized() {
                 return false;
             }
-        };
+        }
         true
     }
 
@@ -99,7 +129,10 @@ impl ::protobuf::Message for Task {
                     self.taskId = tmp;
                 },
                 2 => {
-                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.data)?;
+                    if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    self.data = ::std::option::Option::Some(Task_oneof_data::ping_v4(is.read_message()?));
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -116,10 +149,14 @@ impl ::protobuf::Message for Task {
         if self.taskId != 0 {
             my_size += ::protobuf::rt::value_size(1, self.taskId, ::protobuf::wire_format::WireTypeVarint);
         }
-        for value in &self.data {
-            let len = value.compute_size();
-            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
-        };
+        if let ::std::option::Option::Some(ref v) = self.data {
+            match v {
+                &Task_oneof_data::ping_v4(ref v) => {
+                    let len = v.compute_size();
+                    my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+                },
+            };
+        }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
         my_size
@@ -129,11 +166,15 @@ impl ::protobuf::Message for Task {
         if self.taskId != 0 {
             os.write_uint32(1, self.taskId)?;
         }
-        for v in &self.data {
-            os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
-            os.write_raw_varint32(v.get_cached_size())?;
-            v.write_to_with_cached_sizes(os)?;
-        };
+        if let ::std::option::Option::Some(ref v) = self.data {
+            match v {
+                &Task_oneof_data::ping_v4(ref v) => {
+                    os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+                    os.write_raw_varint32(v.get_cached_size())?;
+                    v.write_to_with_cached_sizes(os)?;
+                },
+            };
+        }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
     }
@@ -181,10 +222,10 @@ impl ::protobuf::Message for Task {
                     |m: &Task| { &m.taskId },
                     |m: &mut Task| { &mut m.taskId },
                 ));
-                fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<Data>>(
-                    "data",
-                    |m: &Task| { &m.data },
-                    |m: &mut Task| { &mut m.data },
+                fields.push(::protobuf::reflect::accessor::make_singular_message_accessor::<_, PingV4>(
+                    "ping_v4",
+                    Task::has_ping_v4,
+                    Task::get_ping_v4,
                 ));
                 ::protobuf::reflect::MessageDescriptor::new::<Task>(
                     "Task",
@@ -209,7 +250,7 @@ impl ::protobuf::Message for Task {
 impl ::protobuf::Clear for Task {
     fn clear(&mut self) {
         self.clear_taskId();
-        self.clear_data();
+        self.clear_ping_v4();
         self.unknown_fields.clear();
     }
 }
@@ -384,216 +425,6 @@ impl ::std::fmt::Debug for Metadata {
 }
 
 impl ::protobuf::reflect::ProtobufValue for Metadata {
-    fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
-        ::protobuf::reflect::ProtobufValueRef::Message(self)
-    }
-}
-
-#[derive(PartialEq,Clone,Default)]
-pub struct Data {
-    // message oneof groups
-    pub value: ::std::option::Option<Data_oneof_value>,
-    // special fields
-    pub unknown_fields: ::protobuf::UnknownFields,
-    pub cached_size: ::protobuf::CachedSize,
-}
-
-#[derive(Clone,PartialEq)]
-pub enum Data_oneof_value {
-    ping_v4(PingV4),
-}
-
-impl Data {
-    pub fn new() -> Data {
-        ::std::default::Default::default()
-    }
-
-    // .PingV4 ping_v4 = 1;
-
-    pub fn clear_ping_v4(&mut self) {
-        self.value = ::std::option::Option::None;
-    }
-
-    pub fn has_ping_v4(&self) -> bool {
-        match self.value {
-            ::std::option::Option::Some(Data_oneof_value::ping_v4(..)) => true,
-            _ => false,
-        }
-    }
-
-    // Param is passed by value, moved
-    pub fn set_ping_v4(&mut self, v: PingV4) {
-        self.value = ::std::option::Option::Some(Data_oneof_value::ping_v4(v))
-    }
-
-    // Mutable pointer to the field.
-    pub fn mut_ping_v4(&mut self) -> &mut PingV4 {
-        if let ::std::option::Option::Some(Data_oneof_value::ping_v4(_)) = self.value {
-        } else {
-            self.value = ::std::option::Option::Some(Data_oneof_value::ping_v4(PingV4::new()));
-        }
-        match self.value {
-            ::std::option::Option::Some(Data_oneof_value::ping_v4(ref mut v)) => v,
-            _ => panic!(),
-        }
-    }
-
-    // Take field
-    pub fn take_ping_v4(&mut self) -> PingV4 {
-        if self.has_ping_v4() {
-            match self.value.take() {
-                ::std::option::Option::Some(Data_oneof_value::ping_v4(v)) => v,
-                _ => panic!(),
-            }
-        } else {
-            PingV4::new()
-        }
-    }
-
-    pub fn get_ping_v4(&self) -> &PingV4 {
-        match self.value {
-            ::std::option::Option::Some(Data_oneof_value::ping_v4(ref v)) => v,
-            _ => PingV4::default_instance(),
-        }
-    }
-}
-
-impl ::protobuf::Message for Data {
-    fn is_initialized(&self) -> bool {
-        if let Some(Data_oneof_value::ping_v4(ref v)) = self.value {
-            if !v.is_initialized() {
-                return false;
-            }
-        }
-        true
-    }
-
-    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream) -> ::protobuf::ProtobufResult<()> {
-        while !is.eof()? {
-            let (field_number, wire_type) = is.read_tag_unpack()?;
-            match field_number {
-                1 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    self.value = ::std::option::Option::Some(Data_oneof_value::ping_v4(is.read_message()?));
-                },
-                _ => {
-                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
-                },
-            };
-        }
-        ::std::result::Result::Ok(())
-    }
-
-    // Compute sizes of nested messages
-    #[allow(unused_variables)]
-    fn compute_size(&self) -> u32 {
-        let mut my_size = 0;
-        if let ::std::option::Option::Some(ref v) = self.value {
-            match v {
-                &Data_oneof_value::ping_v4(ref v) => {
-                    let len = v.compute_size();
-                    my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
-                },
-            };
-        }
-        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
-        self.cached_size.set(my_size);
-        my_size
-    }
-
-    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
-        if let ::std::option::Option::Some(ref v) = self.value {
-            match v {
-                &Data_oneof_value::ping_v4(ref v) => {
-                    os.write_tag(1, ::protobuf::wire_format::WireTypeLengthDelimited)?;
-                    os.write_raw_varint32(v.get_cached_size())?;
-                    v.write_to_with_cached_sizes(os)?;
-                },
-            };
-        }
-        os.write_unknown_fields(self.get_unknown_fields())?;
-        ::std::result::Result::Ok(())
-    }
-
-    fn get_cached_size(&self) -> u32 {
-        self.cached_size.get()
-    }
-
-    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
-        &self.unknown_fields
-    }
-
-    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
-        &mut self.unknown_fields
-    }
-
-    fn as_any(&self) -> &::std::any::Any {
-        self as &::std::any::Any
-    }
-    fn as_any_mut(&mut self) -> &mut ::std::any::Any {
-        self as &mut ::std::any::Any
-    }
-    fn into_any(self: Box<Self>) -> ::std::boxed::Box<::std::any::Any> {
-        self
-    }
-
-    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
-        Self::descriptor_static()
-    }
-
-    fn new() -> Data {
-        Data::new()
-    }
-
-    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
-        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy {
-            lock: ::protobuf::lazy::ONCE_INIT,
-            ptr: 0 as *const ::protobuf::reflect::MessageDescriptor,
-        };
-        unsafe {
-            descriptor.get(|| {
-                let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_singular_message_accessor::<_, PingV4>(
-                    "ping_v4",
-                    Data::has_ping_v4,
-                    Data::get_ping_v4,
-                ));
-                ::protobuf::reflect::MessageDescriptor::new::<Data>(
-                    "Data",
-                    fields,
-                    file_descriptor_proto()
-                )
-            })
-        }
-    }
-
-    fn default_instance() -> &'static Data {
-        static mut instance: ::protobuf::lazy::Lazy<Data> = ::protobuf::lazy::Lazy {
-            lock: ::protobuf::lazy::ONCE_INIT,
-            ptr: 0 as *const Data,
-        };
-        unsafe {
-            instance.get(Data::new)
-        }
-    }
-}
-
-impl ::protobuf::Clear for Data {
-    fn clear(&mut self) {
-        self.clear_ping_v4();
-        self.unknown_fields.clear();
-    }
-}
-
-impl ::std::fmt::Debug for Data {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-        ::protobuf::text_format::fmt(self, f)
-    }
-}
-
-impl ::protobuf::reflect::ProtobufValue for Data {
     fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
         ::protobuf::reflect::ProtobufValueRef::Message(self)
     }
@@ -797,45 +628,40 @@ impl ::protobuf::reflect::ProtobufValue for PingV4 {
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\x18schema/verfploeter.proto\"9\n\x04Task\x12\x16\n\x06taskId\x18\x01\
-    \x20\x01(\rR\x06taskId\x12\x19\n\x04data\x18\x02\x20\x03(\x0b2\x05.DataR\
-    \x04data\"&\n\x08Metadata\x12\x1a\n\x08hostname\x18\x01\x20\x01(\tR\x08h\
-    ostname\"3\n\x04Data\x12\"\n\x07ping_v4\x18\x01\x20\x01(\x0b2\x07.PingV4\
-    H\0R\x06pingV4B\x07\n\x05value\"d\n\x06PingV4\x12%\n\x0esource_address\
+    \n\x18schema/verfploeter.proto\"J\n\x04Task\x12\x16\n\x06taskId\x18\x01\
+    \x20\x01(\rR\x06taskId\x12\"\n\x07ping_v4\x18\x02\x20\x01(\x0b2\x07.Ping\
+    V4H\0R\x06pingV4B\x06\n\x04data\"&\n\x08Metadata\x12\x1a\n\x08hostname\
+    \x18\x01\x20\x01(\tR\x08hostname\"d\n\x06PingV4\x12%\n\x0esource_address\
     \x18\x01\x20\x01(\rR\rsourceAddress\x123\n\x15destination_addresses\x18\
     \x02\x20\x03(\rR\x14destinationAddresses2.\n\x0bVerfploeter\x12\x1f\n\
-    \x07connect\x12\t.Metadata\x1a\x05.Task\"\00\x01J\xfe\x04\n\x06\x12\x04\
-    \0\0\x18\x01\n\x08\n\x01\x0c\x12\x03\0\0\x12\n\n\n\x02\x06\0\x12\x04\x02\
+    \x07connect\x12\t.Metadata\x1a\x05.Task\"\00\x01J\xa1\x04\n\x06\x12\x04\
+    \0\0\x14\x01\n\x08\n\x01\x0c\x12\x03\0\0\x12\n\n\n\x02\x06\0\x12\x04\x02\
     \0\x04\x01\n\n\n\x03\x06\0\x01\x12\x03\x02\x08\x13\n\x0b\n\x04\x06\0\x02\
     \0\x12\x03\x03\x042\n\x0c\n\x05\x06\0\x02\0\x01\x12\x03\x03\x08\x0f\n\
     \x0c\n\x05\x06\0\x02\0\x02\x12\x03\x03\x10\x18\n\x0c\n\x05\x06\0\x02\0\
     \x06\x12\x03\x03#)\n\x0c\n\x05\x06\0\x02\0\x03\x12\x03\x03*.\n\n\n\x02\
-    \x04\0\x12\x04\x06\0\t\x01\n\n\n\x03\x04\0\x01\x12\x03\x06\x08\x0c\n\x0b\
-    \n\x04\x04\0\x02\0\x12\x03\x07\x04\x16\n\r\n\x05\x04\0\x02\0\x04\x12\x04\
-    \x07\x04\x06\x0e\n\x0c\n\x05\x04\0\x02\0\x05\x12\x03\x07\x04\n\n\x0c\n\
-    \x05\x04\0\x02\0\x01\x12\x03\x07\x0b\x11\n\x0c\n\x05\x04\0\x02\0\x03\x12\
-    \x03\x07\x14\x15\n\x0b\n\x04\x04\0\x02\x01\x12\x03\x08\x04\x1b\n\x0c\n\
-    \x05\x04\0\x02\x01\x04\x12\x03\x08\x04\x0c\n\x0c\n\x05\x04\0\x02\x01\x06\
-    \x12\x03\x08\r\x11\n\x0c\n\x05\x04\0\x02\x01\x01\x12\x03\x08\x12\x16\n\
-    \x0c\n\x05\x04\0\x02\x01\x03\x12\x03\x08\x19\x1a\n\n\n\x02\x04\x01\x12\
-    \x04\x0b\0\r\x01\n\n\n\x03\x04\x01\x01\x12\x03\x0b\x08\x10\n\x0b\n\x04\
-    \x04\x01\x02\0\x12\x03\x0c\x04\x18\n\r\n\x05\x04\x01\x02\0\x04\x12\x04\
-    \x0c\x04\x0b\x12\n\x0c\n\x05\x04\x01\x02\0\x05\x12\x03\x0c\x04\n\n\x0c\n\
-    \x05\x04\x01\x02\0\x01\x12\x03\x0c\x0b\x13\n\x0c\n\x05\x04\x01\x02\0\x03\
-    \x12\x03\x0c\x16\x17\n\n\n\x02\x04\x02\x12\x04\x0f\0\x13\x01\n\n\n\x03\
-    \x04\x02\x01\x12\x03\x0f\x08\x0c\n\x0c\n\x04\x04\x02\x08\0\x12\x04\x10\
-    \x04\x12\x05\n\x0c\n\x05\x04\x02\x08\0\x01\x12\x03\x10\n\x0f\n\x0b\n\x04\
-    \x04\x02\x02\0\x12\x03\x11\x08\x1b\n\x0c\n\x05\x04\x02\x02\0\x06\x12\x03\
-    \x11\x08\x0e\n\x0c\n\x05\x04\x02\x02\0\x01\x12\x03\x11\x0f\x16\n\x0c\n\
-    \x05\x04\x02\x02\0\x03\x12\x03\x11\x19\x1a\n\n\n\x02\x04\x03\x12\x04\x15\
-    \0\x18\x01\n\n\n\x03\x04\x03\x01\x12\x03\x15\x08\x0e\n\x0b\n\x04\x04\x03\
-    \x02\0\x12\x03\x16\x04\x1e\n\r\n\x05\x04\x03\x02\0\x04\x12\x04\x16\x04\
-    \x15\x10\n\x0c\n\x05\x04\x03\x02\0\x05\x12\x03\x16\x04\n\n\x0c\n\x05\x04\
-    \x03\x02\0\x01\x12\x03\x16\x0b\x19\n\x0c\n\x05\x04\x03\x02\0\x03\x12\x03\
-    \x16\x1c\x1d\n\x0b\n\x04\x04\x03\x02\x01\x12\x03\x17\x04.\n\x0c\n\x05\
-    \x04\x03\x02\x01\x04\x12\x03\x17\x04\x0c\n\x0c\n\x05\x04\x03\x02\x01\x05\
-    \x12\x03\x17\r\x13\n\x0c\n\x05\x04\x03\x02\x01\x01\x12\x03\x17\x14)\n\
-    \x0c\n\x05\x04\x03\x02\x01\x03\x12\x03\x17,-b\x06proto3\
+    \x04\0\x12\x04\x06\0\x0b\x01\n\n\n\x03\x04\0\x01\x12\x03\x06\x08\x0c\n\
+    \x0b\n\x04\x04\0\x02\0\x12\x03\x07\x04\x16\n\r\n\x05\x04\0\x02\0\x04\x12\
+    \x04\x07\x04\x06\x0e\n\x0c\n\x05\x04\0\x02\0\x05\x12\x03\x07\x04\n\n\x0c\
+    \n\x05\x04\0\x02\0\x01\x12\x03\x07\x0b\x11\n\x0c\n\x05\x04\0\x02\0\x03\
+    \x12\x03\x07\x14\x15\n\x0c\n\x04\x04\0\x08\0\x12\x04\x08\x04\n\x05\n\x0c\
+    \n\x05\x04\0\x08\0\x01\x12\x03\x08\n\x0e\n\x0b\n\x04\x04\0\x02\x01\x12\
+    \x03\t\x08\x1b\n\x0c\n\x05\x04\0\x02\x01\x06\x12\x03\t\x08\x0e\n\x0c\n\
+    \x05\x04\0\x02\x01\x01\x12\x03\t\x0f\x16\n\x0c\n\x05\x04\0\x02\x01\x03\
+    \x12\x03\t\x19\x1a\n\n\n\x02\x04\x01\x12\x04\r\0\x0f\x01\n\n\n\x03\x04\
+    \x01\x01\x12\x03\r\x08\x10\n\x0b\n\x04\x04\x01\x02\0\x12\x03\x0e\x04\x18\
+    \n\r\n\x05\x04\x01\x02\0\x04\x12\x04\x0e\x04\r\x12\n\x0c\n\x05\x04\x01\
+    \x02\0\x05\x12\x03\x0e\x04\n\n\x0c\n\x05\x04\x01\x02\0\x01\x12\x03\x0e\
+    \x0b\x13\n\x0c\n\x05\x04\x01\x02\0\x03\x12\x03\x0e\x16\x17\n\n\n\x02\x04\
+    \x02\x12\x04\x11\0\x14\x01\n\n\n\x03\x04\x02\x01\x12\x03\x11\x08\x0e\n\
+    \x0b\n\x04\x04\x02\x02\0\x12\x03\x12\x04\x1e\n\r\n\x05\x04\x02\x02\0\x04\
+    \x12\x04\x12\x04\x11\x10\n\x0c\n\x05\x04\x02\x02\0\x05\x12\x03\x12\x04\n\
+    \n\x0c\n\x05\x04\x02\x02\0\x01\x12\x03\x12\x0b\x19\n\x0c\n\x05\x04\x02\
+    \x02\0\x03\x12\x03\x12\x1c\x1d\n\x0b\n\x04\x04\x02\x02\x01\x12\x03\x13\
+    \x04.\n\x0c\n\x05\x04\x02\x02\x01\x04\x12\x03\x13\x04\x0c\n\x0c\n\x05\
+    \x04\x02\x02\x01\x05\x12\x03\x13\r\x13\n\x0c\n\x05\x04\x02\x02\x01\x01\
+    \x12\x03\x13\x14)\n\x0c\n\x05\x04\x02\x02\x01\x03\x12\x03\x13,-b\x06prot\
+    o3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy {
