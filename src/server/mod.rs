@@ -92,6 +92,7 @@ impl Verfploeter for VerfploeterService {
     }
 
     fn do_task(&mut self, ctx: RpcContext, mut req: ScheduleTask, sink: UnarySink<Ack>) {
+        debug!("received do_task request");
         if req.has_ping_v4() {
             let tx = self
                 .connection_manager

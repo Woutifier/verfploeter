@@ -1,5 +1,6 @@
 #[macro_use]
 extern crate log;
+extern crate byteorder;
 extern crate clap;
 extern crate env_logger;
 extern crate futures;
@@ -33,24 +34,8 @@ fn main() {
         let mut s = server::Server::new();
         s.start();
 
-        let mut counter = 0;
+        // todo: come up with a smarter way to keep the program alive
         loop {
-            {
-                let hashmap = s.connection_list.lock().unwrap();
-                for (_, v) in hashmap.iter() {
-                    let mut t = Task::new();
-                    t.taskId = counter;
-                    counter += 1;
-                    let mut p = PingV4::new();
-                    p.source_address = Ipv4Addr::from([130, 89, 12, 10]).into();
-                    p.destination_addresses = vec![
-                        Ipv4Addr::from([8, 8, 8, 8]).into(),
-                        Ipv4Addr::from([1, 1, 1, 1]).into(),
-                    ];
-                    t.set_ping_v4(p);
-                    v.channel.clone().send(t).wait().unwrap();
-                }
-            }
             thread::sleep(Duration::from_secs(1));
         }
     } else if let Some(client_matches) = matches.subcommand_matches("client") {
