@@ -1,9 +1,10 @@
-use super::schema::verfploeter::{Client, Empty, Metadata, PingV4, ScheduleTask};
+use super::schema::verfploeter::{Address, Client, Empty, Ping, ScheduleTask, TaskId};
 use super::schema::verfploeter_grpc::VerfploeterClient;
 use clap::ArgMatches;
-use futures::sync::mpsc::{channel, Receiver, Sender};
-use futures::*;
+use futures::Stream;
 use grpcio::{ChannelBuilder, Environment};
+use protobuf::RepeatedField;
+use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
@@ -16,13 +17,17 @@ pub fn execute(args: &ArgMatches) {
     let channel = ChannelBuilder::new(env).connect("127.0.0.1:50001");
     let grpc_client = VerfploeterClient::new(channel);
 
-    if let Some(matches) = args.subcommand_matches("client-list") {
-        let client_list = grpc_client.list_clients(&Empty::new()).unwrap();
-        println!("Connected clients: {}", client_list.get_clients().len());
-        println!("-------------------------------------");
-        println!("Index\t\t\tHostname");
-        for client in client_list.get_clients() {
-            println!("{}\t\t\t{}", client.index, client.get_metadata().hostname);
+    if args.subcommand_matches("client-list").is_some() {
+        match grpc_client.list_clients(&Empty::new()) {
+            Ok(client_list) => {
+                println!("Connected clients: {}", client_list.get_clients().len());
+                println!("-------------------------------------");
+                println!("Index\t\t\tHostname");
+                for client in client_list.get_clients() {
+                    println!("{}\t\t\t{}", client.index, client.get_metadata().hostname);
+                }
+            }
+            Err(e) => error!("unable to obtain client list: {}", e),
         }
     } else if let Some(matches) = args.subcommand_matches("do-verfploeter") {
         // Get parameters
@@ -32,26 +37,43 @@ pub fn execute(args: &ArgMatches) {
         let ip_file = matches.value_of("IP_FILE").unwrap();
 
         // Read IP Addresses from given file
-        let file = File::open(ip_file).expect(&format!("Unable to open file {}", ip_file));
-        let mut buf_reader = BufReader::new(file);
+        let file =
+            File::open(ip_file).unwrap_or_else(|_| panic!("Unable to open file {}", ip_file));
+        let buf_reader = BufReader::new(file);
 
         let ips = buf_reader
             .lines()
-            .map(|l| u32::from(Ipv4Addr::from_str(&l.unwrap()).unwrap()))
-            .collect::<Vec<u32>>();
+            .map(|l| {
+                let mut address = Address::new();
+                address.set_v4(u32::from(Ipv4Addr::from_str(&l.unwrap()).unwrap()));
+                address
+            })
+            .collect::<Vec<Address>>();
 
         // Construct appropriate structs
-        let mut ping_v4 = PingV4::new();
-        ping_v4.source_address = source_ip;
-        ping_v4.destination_addresses = ips;
+        let mut ping = Ping::new();
+        let mut address = Address::new();
+        address.set_v4(source_ip);
+        ping.set_source_address(address);
+        ping.set_destination_addresses(RepeatedField::from(ips));
         let mut client = Client::new();
         client.index = client_index;
         let mut schedule_task = ScheduleTask::new();
-        schedule_task.set_ping_v4(ping_v4);
+        schedule_task.set_ping(ping);
         schedule_task.set_client(client);
 
         // Send task to server
-        grpc_client.do_task(&schedule_task).unwrap();
+        match grpc_client.do_task(&schedule_task) {
+            Ok(_) => println!("successfully scheduled task"),
+            Err(e) => error!("unable to schedule task: {} ({})", e.description(), e),
+        }
+
+        let result = grpc_client.subscribe_result(&TaskId::new()).unwrap();
+        result
+            .map(|i| println!("{}", i))
+            .map_err(|_| ())
+            .wait()
+            .for_each(drop);
     } else {
         unimplemented!();
     }

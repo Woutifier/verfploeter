@@ -1,5 +1,5 @@
 use super::schema::verfploeter::{
-    Ack, Client, ClientList, Empty, Metadata, PingV4, ScheduleTask, Task,
+    Ack, Client, ClientList, Empty, Metadata, ScheduleTask, Task, TaskId, TaskResult,
 };
 use super::schema::verfploeter_grpc::{self, Verfploeter};
 use futures::sync::mpsc::{channel, Sender};
@@ -9,8 +9,9 @@ use grpcio::{
 };
 use protobuf::RepeatedField;
 use std::collections::HashMap;
+use std::net::{IpAddr};
 use std::ops::AddAssign;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 
 pub struct Server {
     pub connection_list: ConnectionList,
@@ -27,16 +28,20 @@ impl Server {
             connection_id: Arc::new(Mutex::new(0)),
         });
 
-        let s = VerfploeterService { connection_manager };
+        let s = VerfploeterService {
+            connection_manager,
+            subscription_list: Arc::new(RwLock::new(HashMap::new())),
+        };
         let service = verfploeter_grpc::create_verfploeter(s);
         let grpc_server = ServerBuilder::new(env)
             .register_service(service)
-            .bind("127.0.0.1", 50001)
+            .bind("0.0.0.0", 50001)
             .build()
             .unwrap();
 
         Server {
             connection_list: connections,
+
             grpc_server,
         }
     }
@@ -58,6 +63,32 @@ pub struct Connection {
 #[derive(Clone)]
 struct VerfploeterService {
     connection_manager: Arc<ConnectionManager>,
+    subscription_list: Arc<RwLock<HashMap<u32, Vec<Sender<TaskResult>>>>>,
+}
+
+impl VerfploeterService {
+    fn register_subscriber(&mut self, task_id: u32, tx: Sender<TaskResult>) {
+        debug!("registering subscriber for task id {}", task_id);
+        let mut list = self.subscription_list.write().unwrap();
+        if let Some(subscribers) = list.get_mut(&task_id) {
+            subscribers.push(tx);
+        } else {
+            list.insert(task_id, vec![tx]);
+        }
+    }
+
+    fn get_subscribers(&self, task_id: u32) -> Option<Vec<Sender<TaskResult>>> {
+        let list = self.subscription_list.read().unwrap();
+        if let Some(subscribers) = list.get(&task_id) {
+            debug!(
+                "returning {} subscribers for task {}",
+                subscribers.len(),
+                task_id
+            );
+            return Some(subscribers.to_vec());
+        }
+        None
+    }
 }
 
 impl Verfploeter for VerfploeterService {
@@ -93,14 +124,14 @@ impl Verfploeter for VerfploeterService {
 
     fn do_task(&mut self, ctx: RpcContext, mut req: ScheduleTask, sink: UnarySink<Ack>) {
         debug!("received do_task request");
-        if req.has_ping_v4() {
+        if req.has_ping() {
             let tx = self
                 .connection_manager
                 .get_client_tx(req.get_client().index)
                 .unwrap();
             let mut t = Task::new();
-            t.taskId = 0;
-            t.set_ping_v4(req.take_ping_v4());
+            t.set_task_id(0);
+            t.set_ping(req.take_ping());
 
             tx.send(t).wait().unwrap();
         }
@@ -108,7 +139,7 @@ impl Verfploeter for VerfploeterService {
         ctx.spawn(f);
     }
 
-    fn list_clients(&mut self, ctx: RpcContext, req: Empty, sink: UnarySink<ClientList>) {
+    fn list_clients(&mut self, ctx: RpcContext, _: Empty, sink: UnarySink<ClientList>) {
         debug!("received list_clients request");
         let connections = self.connection_manager.connections.lock().unwrap();
         let mut list = ClientList::new();
@@ -128,6 +159,39 @@ impl Verfploeter for VerfploeterService {
                 .map(|_| ())
                 .map_err(|e| error!("could not send client list: {}", e)),
         );
+    }
+
+    fn send_result(&mut self, ctx: RpcContext, req: TaskResult, sink: UnarySink<Ack>) {
+        let task_id = req.get_task_id();
+        if let Some(subscribers) = self.get_subscribers(task_id) {
+            subscribers
+                .iter()
+                .map(|s| s.clone().send(req.clone()).wait())
+                .for_each(drop);
+        }
+
+        debug!("{}", req);
+
+        ctx.spawn(sink.success(Ack::new()).map_err(|_| ()));
+    }
+
+    fn subscribe_result(
+        &mut self,
+        ctx: RpcContext,
+        req: TaskId,
+        sink: ServerStreamingSink<TaskResult>,
+    ) {
+        let (tx, rx) = channel(1);
+
+        let f = rx
+            .map(|i| (i, grpcio::WriteFlags::default()))
+            .forward(sink.sink_map_err(|_| ()))
+            .map(|_| ())
+            .map_err(|_| error!("closed result stream"));
+
+        self.register_subscriber(req.get_task_id(), tx);
+
+        ctx.spawn(f);
     }
 }
 
@@ -167,10 +231,10 @@ impl ConnectionManager {
     }
 
     fn get_client_tx(&self, connection_id: u32) -> Option<Sender<Task>> {
-        let mut hashmap = self.connections.lock().unwrap();
+        let hashmap = self.connections.lock().unwrap();
         if let Some(v) = hashmap.get(&connection_id) {
             return Some(v.channel.clone());
         }
-        return None;
+        None
     }
 }

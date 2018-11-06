@@ -262,6 +262,162 @@ impl ::protobuf::reflect::ProtobufValue for Ack {
 }
 
 #[derive(PartialEq,Clone,Default)]
+pub struct TaskId {
+    // message fields
+    pub task_id: u32,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl TaskId {
+    pub fn new() -> TaskId {
+        ::std::default::Default::default()
+    }
+
+    // uint32 task_id = 1;
+
+    pub fn clear_task_id(&mut self) {
+        self.task_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_task_id(&mut self, v: u32) {
+        self.task_id = v;
+    }
+
+    pub fn get_task_id(&self) -> u32 {
+        self.task_id
+    }
+}
+
+impl ::protobuf::Message for TaskId {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.task_id = tmp;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.task_id != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.task_id, ::protobuf::wire_format::WireTypeVarint);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
+        if self.task_id != 0 {
+            os.write_uint32(1, self.task_id)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &::std::any::Any {
+        self as &::std::any::Any
+    }
+    fn as_any_mut(&mut self) -> &mut ::std::any::Any {
+        self as &mut ::std::any::Any
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<::std::any::Any> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> TaskId {
+        TaskId::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const ::protobuf::reflect::MessageDescriptor,
+        };
+        unsafe {
+            descriptor.get(|| {
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "task_id",
+                    |m: &TaskId| { &m.task_id },
+                    |m: &mut TaskId| { &mut m.task_id },
+                ));
+                ::protobuf::reflect::MessageDescriptor::new::<TaskId>(
+                    "TaskId",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static TaskId {
+        static mut instance: ::protobuf::lazy::Lazy<TaskId> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const TaskId,
+        };
+        unsafe {
+            instance.get(TaskId::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for TaskId {
+    fn clear(&mut self) {
+        self.clear_task_id();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for TaskId {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for TaskId {
+    fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
+        ::protobuf::reflect::ProtobufValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
 pub struct ScheduleTask {
     // message fields
     pub client: ::protobuf::SingularPtrField<Client>,
@@ -274,7 +430,7 @@ pub struct ScheduleTask {
 
 #[derive(Clone,PartialEq)]
 pub enum ScheduleTask_oneof_data {
-    ping_v4(PingV4),
+    ping(Ping),
 }
 
 impl ScheduleTask {
@@ -315,52 +471,52 @@ impl ScheduleTask {
         self.client.as_ref().unwrap_or_else(|| Client::default_instance())
     }
 
-    // .PingV4 ping_v4 = 2;
+    // .Ping ping = 2;
 
-    pub fn clear_ping_v4(&mut self) {
+    pub fn clear_ping(&mut self) {
         self.data = ::std::option::Option::None;
     }
 
-    pub fn has_ping_v4(&self) -> bool {
+    pub fn has_ping(&self) -> bool {
         match self.data {
-            ::std::option::Option::Some(ScheduleTask_oneof_data::ping_v4(..)) => true,
+            ::std::option::Option::Some(ScheduleTask_oneof_data::ping(..)) => true,
             _ => false,
         }
     }
 
     // Param is passed by value, moved
-    pub fn set_ping_v4(&mut self, v: PingV4) {
-        self.data = ::std::option::Option::Some(ScheduleTask_oneof_data::ping_v4(v))
+    pub fn set_ping(&mut self, v: Ping) {
+        self.data = ::std::option::Option::Some(ScheduleTask_oneof_data::ping(v))
     }
 
     // Mutable pointer to the field.
-    pub fn mut_ping_v4(&mut self) -> &mut PingV4 {
-        if let ::std::option::Option::Some(ScheduleTask_oneof_data::ping_v4(_)) = self.data {
+    pub fn mut_ping(&mut self) -> &mut Ping {
+        if let ::std::option::Option::Some(ScheduleTask_oneof_data::ping(_)) = self.data {
         } else {
-            self.data = ::std::option::Option::Some(ScheduleTask_oneof_data::ping_v4(PingV4::new()));
+            self.data = ::std::option::Option::Some(ScheduleTask_oneof_data::ping(Ping::new()));
         }
         match self.data {
-            ::std::option::Option::Some(ScheduleTask_oneof_data::ping_v4(ref mut v)) => v,
+            ::std::option::Option::Some(ScheduleTask_oneof_data::ping(ref mut v)) => v,
             _ => panic!(),
         }
     }
 
     // Take field
-    pub fn take_ping_v4(&mut self) -> PingV4 {
-        if self.has_ping_v4() {
+    pub fn take_ping(&mut self) -> Ping {
+        if self.has_ping() {
             match self.data.take() {
-                ::std::option::Option::Some(ScheduleTask_oneof_data::ping_v4(v)) => v,
+                ::std::option::Option::Some(ScheduleTask_oneof_data::ping(v)) => v,
                 _ => panic!(),
             }
         } else {
-            PingV4::new()
+            Ping::new()
         }
     }
 
-    pub fn get_ping_v4(&self) -> &PingV4 {
+    pub fn get_ping(&self) -> &Ping {
         match self.data {
-            ::std::option::Option::Some(ScheduleTask_oneof_data::ping_v4(ref v)) => v,
-            _ => PingV4::default_instance(),
+            ::std::option::Option::Some(ScheduleTask_oneof_data::ping(ref v)) => v,
+            _ => Ping::default_instance(),
         }
     }
 }
@@ -372,7 +528,7 @@ impl ::protobuf::Message for ScheduleTask {
                 return false;
             }
         };
-        if let Some(ScheduleTask_oneof_data::ping_v4(ref v)) = self.data {
+        if let Some(ScheduleTask_oneof_data::ping(ref v)) = self.data {
             if !v.is_initialized() {
                 return false;
             }
@@ -391,7 +547,7 @@ impl ::protobuf::Message for ScheduleTask {
                     if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
-                    self.data = ::std::option::Option::Some(ScheduleTask_oneof_data::ping_v4(is.read_message()?));
+                    self.data = ::std::option::Option::Some(ScheduleTask_oneof_data::ping(is.read_message()?));
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -411,7 +567,7 @@ impl ::protobuf::Message for ScheduleTask {
         }
         if let ::std::option::Option::Some(ref v) = self.data {
             match v {
-                &ScheduleTask_oneof_data::ping_v4(ref v) => {
+                &ScheduleTask_oneof_data::ping(ref v) => {
                     let len = v.compute_size();
                     my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
                 },
@@ -430,7 +586,7 @@ impl ::protobuf::Message for ScheduleTask {
         }
         if let ::std::option::Option::Some(ref v) = self.data {
             match v {
-                &ScheduleTask_oneof_data::ping_v4(ref v) => {
+                &ScheduleTask_oneof_data::ping(ref v) => {
                     os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
                     os.write_raw_varint32(v.get_cached_size())?;
                     v.write_to_with_cached_sizes(os)?;
@@ -484,10 +640,10 @@ impl ::protobuf::Message for ScheduleTask {
                     |m: &ScheduleTask| { &m.client },
                     |m: &mut ScheduleTask| { &mut m.client },
                 ));
-                fields.push(::protobuf::reflect::accessor::make_singular_message_accessor::<_, PingV4>(
-                    "ping_v4",
-                    ScheduleTask::has_ping_v4,
-                    ScheduleTask::get_ping_v4,
+                fields.push(::protobuf::reflect::accessor::make_singular_message_accessor::<_, Ping>(
+                    "ping",
+                    ScheduleTask::has_ping,
+                    ScheduleTask::get_ping,
                 ));
                 ::protobuf::reflect::MessageDescriptor::new::<ScheduleTask>(
                     "ScheduleTask",
@@ -512,7 +668,7 @@ impl ::protobuf::Message for ScheduleTask {
 impl ::protobuf::Clear for ScheduleTask {
     fn clear(&mut self) {
         self.clear_client();
-        self.clear_ping_v4();
+        self.clear_ping();
         self.unknown_fields.clear();
     }
 }
@@ -915,7 +1071,7 @@ impl ::protobuf::reflect::ProtobufValue for Client {
 #[derive(PartialEq,Clone,Default)]
 pub struct Task {
     // message fields
-    pub taskId: u32,
+    pub task_id: u32,
     // message oneof groups
     pub data: ::std::option::Option<Task_oneof_data>,
     // special fields
@@ -925,7 +1081,7 @@ pub struct Task {
 
 #[derive(Clone,PartialEq)]
 pub enum Task_oneof_data {
-    ping_v4(PingV4),
+    ping(Ping),
 }
 
 impl Task {
@@ -933,74 +1089,74 @@ impl Task {
         ::std::default::Default::default()
     }
 
-    // uint32 taskId = 1;
+    // uint32 task_id = 1;
 
-    pub fn clear_taskId(&mut self) {
-        self.taskId = 0;
+    pub fn clear_task_id(&mut self) {
+        self.task_id = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_taskId(&mut self, v: u32) {
-        self.taskId = v;
+    pub fn set_task_id(&mut self, v: u32) {
+        self.task_id = v;
     }
 
-    pub fn get_taskId(&self) -> u32 {
-        self.taskId
+    pub fn get_task_id(&self) -> u32 {
+        self.task_id
     }
 
-    // .PingV4 ping_v4 = 2;
+    // .Ping ping = 2;
 
-    pub fn clear_ping_v4(&mut self) {
+    pub fn clear_ping(&mut self) {
         self.data = ::std::option::Option::None;
     }
 
-    pub fn has_ping_v4(&self) -> bool {
+    pub fn has_ping(&self) -> bool {
         match self.data {
-            ::std::option::Option::Some(Task_oneof_data::ping_v4(..)) => true,
+            ::std::option::Option::Some(Task_oneof_data::ping(..)) => true,
             _ => false,
         }
     }
 
     // Param is passed by value, moved
-    pub fn set_ping_v4(&mut self, v: PingV4) {
-        self.data = ::std::option::Option::Some(Task_oneof_data::ping_v4(v))
+    pub fn set_ping(&mut self, v: Ping) {
+        self.data = ::std::option::Option::Some(Task_oneof_data::ping(v))
     }
 
     // Mutable pointer to the field.
-    pub fn mut_ping_v4(&mut self) -> &mut PingV4 {
-        if let ::std::option::Option::Some(Task_oneof_data::ping_v4(_)) = self.data {
+    pub fn mut_ping(&mut self) -> &mut Ping {
+        if let ::std::option::Option::Some(Task_oneof_data::ping(_)) = self.data {
         } else {
-            self.data = ::std::option::Option::Some(Task_oneof_data::ping_v4(PingV4::new()));
+            self.data = ::std::option::Option::Some(Task_oneof_data::ping(Ping::new()));
         }
         match self.data {
-            ::std::option::Option::Some(Task_oneof_data::ping_v4(ref mut v)) => v,
+            ::std::option::Option::Some(Task_oneof_data::ping(ref mut v)) => v,
             _ => panic!(),
         }
     }
 
     // Take field
-    pub fn take_ping_v4(&mut self) -> PingV4 {
-        if self.has_ping_v4() {
+    pub fn take_ping(&mut self) -> Ping {
+        if self.has_ping() {
             match self.data.take() {
-                ::std::option::Option::Some(Task_oneof_data::ping_v4(v)) => v,
+                ::std::option::Option::Some(Task_oneof_data::ping(v)) => v,
                 _ => panic!(),
             }
         } else {
-            PingV4::new()
+            Ping::new()
         }
     }
 
-    pub fn get_ping_v4(&self) -> &PingV4 {
+    pub fn get_ping(&self) -> &Ping {
         match self.data {
-            ::std::option::Option::Some(Task_oneof_data::ping_v4(ref v)) => v,
-            _ => PingV4::default_instance(),
+            ::std::option::Option::Some(Task_oneof_data::ping(ref v)) => v,
+            _ => Ping::default_instance(),
         }
     }
 }
 
 impl ::protobuf::Message for Task {
     fn is_initialized(&self) -> bool {
-        if let Some(Task_oneof_data::ping_v4(ref v)) = self.data {
+        if let Some(Task_oneof_data::ping(ref v)) = self.data {
             if !v.is_initialized() {
                 return false;
             }
@@ -1017,13 +1173,13 @@ impl ::protobuf::Message for Task {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint32()?;
-                    self.taskId = tmp;
+                    self.task_id = tmp;
                 },
                 2 => {
                     if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
-                    self.data = ::std::option::Option::Some(Task_oneof_data::ping_v4(is.read_message()?));
+                    self.data = ::std::option::Option::Some(Task_oneof_data::ping(is.read_message()?));
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -1037,12 +1193,12 @@ impl ::protobuf::Message for Task {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.taskId != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.taskId, ::protobuf::wire_format::WireTypeVarint);
+        if self.task_id != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.task_id, ::protobuf::wire_format::WireTypeVarint);
         }
         if let ::std::option::Option::Some(ref v) = self.data {
             match v {
-                &Task_oneof_data::ping_v4(ref v) => {
+                &Task_oneof_data::ping(ref v) => {
                     let len = v.compute_size();
                     my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
                 },
@@ -1054,12 +1210,12 @@ impl ::protobuf::Message for Task {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
-        if self.taskId != 0 {
-            os.write_uint32(1, self.taskId)?;
+        if self.task_id != 0 {
+            os.write_uint32(1, self.task_id)?;
         }
         if let ::std::option::Option::Some(ref v) = self.data {
             match v {
-                &Task_oneof_data::ping_v4(ref v) => {
+                &Task_oneof_data::ping(ref v) => {
                     os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
                     os.write_raw_varint32(v.get_cached_size())?;
                     v.write_to_with_cached_sizes(os)?;
@@ -1109,14 +1265,14 @@ impl ::protobuf::Message for Task {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "taskId",
-                    |m: &Task| { &m.taskId },
-                    |m: &mut Task| { &mut m.taskId },
+                    "task_id",
+                    |m: &Task| { &m.task_id },
+                    |m: &mut Task| { &mut m.task_id },
                 ));
-                fields.push(::protobuf::reflect::accessor::make_singular_message_accessor::<_, PingV4>(
-                    "ping_v4",
-                    Task::has_ping_v4,
-                    Task::get_ping_v4,
+                fields.push(::protobuf::reflect::accessor::make_singular_message_accessor::<_, Ping>(
+                    "ping",
+                    Task::has_ping,
+                    Task::get_ping,
                 ));
                 ::protobuf::reflect::MessageDescriptor::new::<Task>(
                     "Task",
@@ -1140,8 +1296,8 @@ impl ::protobuf::Message for Task {
 
 impl ::protobuf::Clear for Task {
     fn clear(&mut self) {
-        self.clear_taskId();
-        self.clear_ping_v4();
+        self.clear_task_id();
+        self.clear_ping();
         self.unknown_fields.clear();
     }
 }
@@ -1322,63 +1478,91 @@ impl ::protobuf::reflect::ProtobufValue for Metadata {
 }
 
 #[derive(PartialEq,Clone,Default)]
-pub struct PingV4 {
+pub struct Ping {
     // message fields
-    pub source_address: u32,
-    pub destination_addresses: ::std::vec::Vec<u32>,
+    pub source_address: ::protobuf::SingularPtrField<Address>,
+    pub destination_addresses: ::protobuf::RepeatedField<Address>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
 }
 
-impl PingV4 {
-    pub fn new() -> PingV4 {
+impl Ping {
+    pub fn new() -> Ping {
         ::std::default::Default::default()
     }
 
-    // uint32 source_address = 1;
+    // .Address source_address = 1;
 
     pub fn clear_source_address(&mut self) {
-        self.source_address = 0;
+        self.source_address.clear();
+    }
+
+    pub fn has_source_address(&self) -> bool {
+        self.source_address.is_some()
     }
 
     // Param is passed by value, moved
-    pub fn set_source_address(&mut self, v: u32) {
-        self.source_address = v;
+    pub fn set_source_address(&mut self, v: Address) {
+        self.source_address = ::protobuf::SingularPtrField::some(v);
     }
 
-    pub fn get_source_address(&self) -> u32 {
-        self.source_address
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_source_address(&mut self) -> &mut Address {
+        if self.source_address.is_none() {
+            self.source_address.set_default();
+        }
+        self.source_address.as_mut().unwrap()
     }
 
-    // repeated uint32 destination_addresses = 2;
+    // Take field
+    pub fn take_source_address(&mut self) -> Address {
+        self.source_address.take().unwrap_or_else(|| Address::new())
+    }
+
+    pub fn get_source_address(&self) -> &Address {
+        self.source_address.as_ref().unwrap_or_else(|| Address::default_instance())
+    }
+
+    // repeated .Address destination_addresses = 2;
 
     pub fn clear_destination_addresses(&mut self) {
         self.destination_addresses.clear();
     }
 
     // Param is passed by value, moved
-    pub fn set_destination_addresses(&mut self, v: ::std::vec::Vec<u32>) {
+    pub fn set_destination_addresses(&mut self, v: ::protobuf::RepeatedField<Address>) {
         self.destination_addresses = v;
     }
 
     // Mutable pointer to the field.
-    pub fn mut_destination_addresses(&mut self) -> &mut ::std::vec::Vec<u32> {
+    pub fn mut_destination_addresses(&mut self) -> &mut ::protobuf::RepeatedField<Address> {
         &mut self.destination_addresses
     }
 
     // Take field
-    pub fn take_destination_addresses(&mut self) -> ::std::vec::Vec<u32> {
-        ::std::mem::replace(&mut self.destination_addresses, ::std::vec::Vec::new())
+    pub fn take_destination_addresses(&mut self) -> ::protobuf::RepeatedField<Address> {
+        ::std::mem::replace(&mut self.destination_addresses, ::protobuf::RepeatedField::new())
     }
 
-    pub fn get_destination_addresses(&self) -> &[u32] {
+    pub fn get_destination_addresses(&self) -> &[Address] {
         &self.destination_addresses
     }
 }
 
-impl ::protobuf::Message for PingV4 {
+impl ::protobuf::Message for Ping {
     fn is_initialized(&self) -> bool {
+        for v in &self.source_address {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        for v in &self.destination_addresses {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
         true
     }
 
@@ -1387,14 +1571,10 @@ impl ::protobuf::Message for PingV4 {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
                 1 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.source_address = tmp;
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.source_address)?;
                 },
                 2 => {
-                    ::protobuf::rt::read_repeated_uint32_into(wire_type, is, &mut self.destination_addresses)?;
+                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.destination_addresses)?;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -1408,11 +1588,13 @@ impl ::protobuf::Message for PingV4 {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.source_address != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.source_address, ::protobuf::wire_format::WireTypeVarint);
+        if let Some(ref v) = self.source_address.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         }
         for value in &self.destination_addresses {
-            my_size += ::protobuf::rt::value_size(2, *value, ::protobuf::wire_format::WireTypeVarint);
+            let len = value.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         };
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -1420,11 +1602,15 @@ impl ::protobuf::Message for PingV4 {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
-        if self.source_address != 0 {
-            os.write_uint32(1, self.source_address)?;
+        if let Some(ref v) = self.source_address.as_ref() {
+            os.write_tag(1, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
         }
         for v in &self.destination_addresses {
-            os.write_uint32(2, *v)?;
+            os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
         };
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -1456,8 +1642,510 @@ impl ::protobuf::Message for PingV4 {
         Self::descriptor_static()
     }
 
-    fn new() -> PingV4 {
-        PingV4::new()
+    fn new() -> Ping {
+        Ping::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const ::protobuf::reflect::MessageDescriptor,
+        };
+        unsafe {
+            descriptor.get(|| {
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<Address>>(
+                    "source_address",
+                    |m: &Ping| { &m.source_address },
+                    |m: &mut Ping| { &mut m.source_address },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<Address>>(
+                    "destination_addresses",
+                    |m: &Ping| { &m.destination_addresses },
+                    |m: &mut Ping| { &mut m.destination_addresses },
+                ));
+                ::protobuf::reflect::MessageDescriptor::new::<Ping>(
+                    "Ping",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static Ping {
+        static mut instance: ::protobuf::lazy::Lazy<Ping> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const Ping,
+        };
+        unsafe {
+            instance.get(Ping::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for Ping {
+    fn clear(&mut self) {
+        self.clear_source_address();
+        self.clear_destination_addresses();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for Ping {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for Ping {
+    fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
+        ::protobuf::reflect::ProtobufValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct Address {
+    // message oneof groups
+    pub value: ::std::option::Option<Address_oneof_value>,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+#[derive(Clone,PartialEq)]
+pub enum Address_oneof_value {
+    v4(u32),
+    v6(::std::vec::Vec<u8>),
+}
+
+impl Address {
+    pub fn new() -> Address {
+        ::std::default::Default::default()
+    }
+
+    // uint32 v4 = 1;
+
+    pub fn clear_v4(&mut self) {
+        self.value = ::std::option::Option::None;
+    }
+
+    pub fn has_v4(&self) -> bool {
+        match self.value {
+            ::std::option::Option::Some(Address_oneof_value::v4(..)) => true,
+            _ => false,
+        }
+    }
+
+    // Param is passed by value, moved
+    pub fn set_v4(&mut self, v: u32) {
+        self.value = ::std::option::Option::Some(Address_oneof_value::v4(v))
+    }
+
+    pub fn get_v4(&self) -> u32 {
+        match self.value {
+            ::std::option::Option::Some(Address_oneof_value::v4(v)) => v,
+            _ => 0,
+        }
+    }
+
+    // bytes v6 = 2;
+
+    pub fn clear_v6(&mut self) {
+        self.value = ::std::option::Option::None;
+    }
+
+    pub fn has_v6(&self) -> bool {
+        match self.value {
+            ::std::option::Option::Some(Address_oneof_value::v6(..)) => true,
+            _ => false,
+        }
+    }
+
+    // Param is passed by value, moved
+    pub fn set_v6(&mut self, v: ::std::vec::Vec<u8>) {
+        self.value = ::std::option::Option::Some(Address_oneof_value::v6(v))
+    }
+
+    // Mutable pointer to the field.
+    pub fn mut_v6(&mut self) -> &mut ::std::vec::Vec<u8> {
+        if let ::std::option::Option::Some(Address_oneof_value::v6(_)) = self.value {
+        } else {
+            self.value = ::std::option::Option::Some(Address_oneof_value::v6(::std::vec::Vec::new()));
+        }
+        match self.value {
+            ::std::option::Option::Some(Address_oneof_value::v6(ref mut v)) => v,
+            _ => panic!(),
+        }
+    }
+
+    // Take field
+    pub fn take_v6(&mut self) -> ::std::vec::Vec<u8> {
+        if self.has_v6() {
+            match self.value.take() {
+                ::std::option::Option::Some(Address_oneof_value::v6(v)) => v,
+                _ => panic!(),
+            }
+        } else {
+            ::std::vec::Vec::new()
+        }
+    }
+
+    pub fn get_v6(&self) -> &[u8] {
+        match self.value {
+            ::std::option::Option::Some(Address_oneof_value::v6(ref v)) => v,
+            _ => &[],
+        }
+    }
+}
+
+impl ::protobuf::Message for Address {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    self.value = ::std::option::Option::Some(Address_oneof_value::v4(is.read_uint32()?));
+                },
+                2 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    self.value = ::std::option::Option::Some(Address_oneof_value::v6(is.read_bytes()?));
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if let ::std::option::Option::Some(ref v) = self.value {
+            match v {
+                &Address_oneof_value::v4(v) => {
+                    my_size += ::protobuf::rt::value_size(1, v, ::protobuf::wire_format::WireTypeVarint);
+                },
+                &Address_oneof_value::v6(ref v) => {
+                    my_size += ::protobuf::rt::bytes_size(2, &v);
+                },
+            };
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
+        if let ::std::option::Option::Some(ref v) = self.value {
+            match v {
+                &Address_oneof_value::v4(v) => {
+                    os.write_uint32(1, v)?;
+                },
+                &Address_oneof_value::v6(ref v) => {
+                    os.write_bytes(2, v)?;
+                },
+            };
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &::std::any::Any {
+        self as &::std::any::Any
+    }
+    fn as_any_mut(&mut self) -> &mut ::std::any::Any {
+        self as &mut ::std::any::Any
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<::std::any::Any> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> Address {
+        Address::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const ::protobuf::reflect::MessageDescriptor,
+        };
+        unsafe {
+            descriptor.get(|| {
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_singular_u32_accessor::<_>(
+                    "v4",
+                    Address::has_v4,
+                    Address::get_v4,
+                ));
+                fields.push(::protobuf::reflect::accessor::make_singular_bytes_accessor::<_>(
+                    "v6",
+                    Address::has_v6,
+                    Address::get_v6,
+                ));
+                ::protobuf::reflect::MessageDescriptor::new::<Address>(
+                    "Address",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static Address {
+        static mut instance: ::protobuf::lazy::Lazy<Address> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const Address,
+        };
+        unsafe {
+            instance.get(Address::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for Address {
+    fn clear(&mut self) {
+        self.clear_v4();
+        self.clear_v6();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for Address {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for Address {
+    fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
+        ::protobuf::reflect::ProtobufValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct TaskResult {
+    // message fields
+    pub task_id: u32,
+    pub client: ::protobuf::SingularPtrField<Client>,
+    pub result_list: ::protobuf::RepeatedField<Result>,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl TaskResult {
+    pub fn new() -> TaskResult {
+        ::std::default::Default::default()
+    }
+
+    // uint32 task_id = 1;
+
+    pub fn clear_task_id(&mut self) {
+        self.task_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_task_id(&mut self, v: u32) {
+        self.task_id = v;
+    }
+
+    pub fn get_task_id(&self) -> u32 {
+        self.task_id
+    }
+
+    // .Client client = 2;
+
+    pub fn clear_client(&mut self) {
+        self.client.clear();
+    }
+
+    pub fn has_client(&self) -> bool {
+        self.client.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_client(&mut self, v: Client) {
+        self.client = ::protobuf::SingularPtrField::some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_client(&mut self) -> &mut Client {
+        if self.client.is_none() {
+            self.client.set_default();
+        }
+        self.client.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_client(&mut self) -> Client {
+        self.client.take().unwrap_or_else(|| Client::new())
+    }
+
+    pub fn get_client(&self) -> &Client {
+        self.client.as_ref().unwrap_or_else(|| Client::default_instance())
+    }
+
+    // repeated .Result result_list = 3;
+
+    pub fn clear_result_list(&mut self) {
+        self.result_list.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_result_list(&mut self, v: ::protobuf::RepeatedField<Result>) {
+        self.result_list = v;
+    }
+
+    // Mutable pointer to the field.
+    pub fn mut_result_list(&mut self) -> &mut ::protobuf::RepeatedField<Result> {
+        &mut self.result_list
+    }
+
+    // Take field
+    pub fn take_result_list(&mut self) -> ::protobuf::RepeatedField<Result> {
+        ::std::mem::replace(&mut self.result_list, ::protobuf::RepeatedField::new())
+    }
+
+    pub fn get_result_list(&self) -> &[Result] {
+        &self.result_list
+    }
+}
+
+impl ::protobuf::Message for TaskResult {
+    fn is_initialized(&self) -> bool {
+        for v in &self.client {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        for v in &self.result_list {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.task_id = tmp;
+                },
+                2 => {
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.client)?;
+                },
+                3 => {
+                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.result_list)?;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.task_id != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.task_id, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if let Some(ref v) = self.client.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        }
+        for value in &self.result_list {
+            let len = value.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        };
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
+        if self.task_id != 0 {
+            os.write_uint32(1, self.task_id)?;
+        }
+        if let Some(ref v) = self.client.as_ref() {
+            os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        }
+        for v in &self.result_list {
+            os.write_tag(3, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        };
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &::std::any::Any {
+        self as &::std::any::Any
+    }
+    fn as_any_mut(&mut self) -> &mut ::std::any::Any {
+        self as &mut ::std::any::Any
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<::std::any::Any> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> TaskResult {
+        TaskResult::new()
     }
 
     fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
@@ -1469,17 +2157,22 @@ impl ::protobuf::Message for PingV4 {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "source_address",
-                    |m: &PingV4| { &m.source_address },
-                    |m: &mut PingV4| { &mut m.source_address },
+                    "task_id",
+                    |m: &TaskResult| { &m.task_id },
+                    |m: &mut TaskResult| { &mut m.task_id },
                 ));
-                fields.push(::protobuf::reflect::accessor::make_vec_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
-                    "destination_addresses",
-                    |m: &PingV4| { &m.destination_addresses },
-                    |m: &mut PingV4| { &mut m.destination_addresses },
+                fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<Client>>(
+                    "client",
+                    |m: &TaskResult| { &m.client },
+                    |m: &mut TaskResult| { &mut m.client },
                 ));
-                ::protobuf::reflect::MessageDescriptor::new::<PingV4>(
-                    "PingV4",
+                fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<Result>>(
+                    "result_list",
+                    |m: &TaskResult| { &m.result_list },
+                    |m: &mut TaskResult| { &mut m.result_list },
+                ));
+                ::protobuf::reflect::MessageDescriptor::new::<TaskResult>(
+                    "TaskResult",
                     fields,
                     file_descriptor_proto()
                 )
@@ -1487,107 +2180,928 @@ impl ::protobuf::Message for PingV4 {
         }
     }
 
-    fn default_instance() -> &'static PingV4 {
-        static mut instance: ::protobuf::lazy::Lazy<PingV4> = ::protobuf::lazy::Lazy {
+    fn default_instance() -> &'static TaskResult {
+        static mut instance: ::protobuf::lazy::Lazy<TaskResult> = ::protobuf::lazy::Lazy {
             lock: ::protobuf::lazy::ONCE_INIT,
-            ptr: 0 as *const PingV4,
+            ptr: 0 as *const TaskResult,
         };
         unsafe {
-            instance.get(PingV4::new)
+            instance.get(TaskResult::new)
         }
     }
 }
 
-impl ::protobuf::Clear for PingV4 {
+impl ::protobuf::Clear for TaskResult {
     fn clear(&mut self) {
-        self.clear_source_address();
-        self.clear_destination_addresses();
+        self.clear_task_id();
+        self.clear_client();
+        self.clear_result_list();
         self.unknown_fields.clear();
     }
 }
 
-impl ::std::fmt::Debug for PingV4 {
+impl ::std::fmt::Debug for TaskResult {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
         ::protobuf::text_format::fmt(self, f)
     }
 }
 
-impl ::protobuf::reflect::ProtobufValue for PingV4 {
+impl ::protobuf::reflect::ProtobufValue for TaskResult {
+    fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
+        ::protobuf::reflect::ProtobufValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct Result {
+    // message oneof groups
+    pub value: ::std::option::Option<Result_oneof_value>,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+#[derive(Clone,PartialEq)]
+pub enum Result_oneof_value {
+    ping(PingResult),
+}
+
+impl Result {
+    pub fn new() -> Result {
+        ::std::default::Default::default()
+    }
+
+    // .PingResult ping = 1;
+
+    pub fn clear_ping(&mut self) {
+        self.value = ::std::option::Option::None;
+    }
+
+    pub fn has_ping(&self) -> bool {
+        match self.value {
+            ::std::option::Option::Some(Result_oneof_value::ping(..)) => true,
+            _ => false,
+        }
+    }
+
+    // Param is passed by value, moved
+    pub fn set_ping(&mut self, v: PingResult) {
+        self.value = ::std::option::Option::Some(Result_oneof_value::ping(v))
+    }
+
+    // Mutable pointer to the field.
+    pub fn mut_ping(&mut self) -> &mut PingResult {
+        if let ::std::option::Option::Some(Result_oneof_value::ping(_)) = self.value {
+        } else {
+            self.value = ::std::option::Option::Some(Result_oneof_value::ping(PingResult::new()));
+        }
+        match self.value {
+            ::std::option::Option::Some(Result_oneof_value::ping(ref mut v)) => v,
+            _ => panic!(),
+        }
+    }
+
+    // Take field
+    pub fn take_ping(&mut self) -> PingResult {
+        if self.has_ping() {
+            match self.value.take() {
+                ::std::option::Option::Some(Result_oneof_value::ping(v)) => v,
+                _ => panic!(),
+            }
+        } else {
+            PingResult::new()
+        }
+    }
+
+    pub fn get_ping(&self) -> &PingResult {
+        match self.value {
+            ::std::option::Option::Some(Result_oneof_value::ping(ref v)) => v,
+            _ => PingResult::default_instance(),
+        }
+    }
+}
+
+impl ::protobuf::Message for Result {
+    fn is_initialized(&self) -> bool {
+        if let Some(Result_oneof_value::ping(ref v)) = self.value {
+            if !v.is_initialized() {
+                return false;
+            }
+        }
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    self.value = ::std::option::Option::Some(Result_oneof_value::ping(is.read_message()?));
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if let ::std::option::Option::Some(ref v) = self.value {
+            match v {
+                &Result_oneof_value::ping(ref v) => {
+                    let len = v.compute_size();
+                    my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+                },
+            };
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
+        if let ::std::option::Option::Some(ref v) = self.value {
+            match v {
+                &Result_oneof_value::ping(ref v) => {
+                    os.write_tag(1, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+                    os.write_raw_varint32(v.get_cached_size())?;
+                    v.write_to_with_cached_sizes(os)?;
+                },
+            };
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &::std::any::Any {
+        self as &::std::any::Any
+    }
+    fn as_any_mut(&mut self) -> &mut ::std::any::Any {
+        self as &mut ::std::any::Any
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<::std::any::Any> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> Result {
+        Result::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const ::protobuf::reflect::MessageDescriptor,
+        };
+        unsafe {
+            descriptor.get(|| {
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_singular_message_accessor::<_, PingResult>(
+                    "ping",
+                    Result::has_ping,
+                    Result::get_ping,
+                ));
+                ::protobuf::reflect::MessageDescriptor::new::<Result>(
+                    "Result",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static Result {
+        static mut instance: ::protobuf::lazy::Lazy<Result> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const Result,
+        };
+        unsafe {
+            instance.get(Result::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for Result {
+    fn clear(&mut self) {
+        self.clear_ping();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for Result {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for Result {
+    fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
+        ::protobuf::reflect::ProtobufValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct PingResult {
+    // message fields
+    pub source_address: ::protobuf::SingularPtrField<Address>,
+    pub destination_address: ::protobuf::SingularPtrField<Address>,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl PingResult {
+    pub fn new() -> PingResult {
+        ::std::default::Default::default()
+    }
+
+    // .Address source_address = 2;
+
+    pub fn clear_source_address(&mut self) {
+        self.source_address.clear();
+    }
+
+    pub fn has_source_address(&self) -> bool {
+        self.source_address.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_source_address(&mut self, v: Address) {
+        self.source_address = ::protobuf::SingularPtrField::some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_source_address(&mut self) -> &mut Address {
+        if self.source_address.is_none() {
+            self.source_address.set_default();
+        }
+        self.source_address.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_source_address(&mut self) -> Address {
+        self.source_address.take().unwrap_or_else(|| Address::new())
+    }
+
+    pub fn get_source_address(&self) -> &Address {
+        self.source_address.as_ref().unwrap_or_else(|| Address::default_instance())
+    }
+
+    // .Address destination_address = 3;
+
+    pub fn clear_destination_address(&mut self) {
+        self.destination_address.clear();
+    }
+
+    pub fn has_destination_address(&self) -> bool {
+        self.destination_address.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_destination_address(&mut self, v: Address) {
+        self.destination_address = ::protobuf::SingularPtrField::some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_destination_address(&mut self) -> &mut Address {
+        if self.destination_address.is_none() {
+            self.destination_address.set_default();
+        }
+        self.destination_address.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_destination_address(&mut self) -> Address {
+        self.destination_address.take().unwrap_or_else(|| Address::new())
+    }
+
+    pub fn get_destination_address(&self) -> &Address {
+        self.destination_address.as_ref().unwrap_or_else(|| Address::default_instance())
+    }
+}
+
+impl ::protobuf::Message for PingResult {
+    fn is_initialized(&self) -> bool {
+        for v in &self.source_address {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        for v in &self.destination_address {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                2 => {
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.source_address)?;
+                },
+                3 => {
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.destination_address)?;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if let Some(ref v) = self.source_address.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        }
+        if let Some(ref v) = self.destination_address.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
+        if let Some(ref v) = self.source_address.as_ref() {
+            os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        }
+        if let Some(ref v) = self.destination_address.as_ref() {
+            os.write_tag(3, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &::std::any::Any {
+        self as &::std::any::Any
+    }
+    fn as_any_mut(&mut self) -> &mut ::std::any::Any {
+        self as &mut ::std::any::Any
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<::std::any::Any> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> PingResult {
+        PingResult::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const ::protobuf::reflect::MessageDescriptor,
+        };
+        unsafe {
+            descriptor.get(|| {
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<Address>>(
+                    "source_address",
+                    |m: &PingResult| { &m.source_address },
+                    |m: &mut PingResult| { &mut m.source_address },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<Address>>(
+                    "destination_address",
+                    |m: &PingResult| { &m.destination_address },
+                    |m: &mut PingResult| { &mut m.destination_address },
+                ));
+                ::protobuf::reflect::MessageDescriptor::new::<PingResult>(
+                    "PingResult",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static PingResult {
+        static mut instance: ::protobuf::lazy::Lazy<PingResult> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const PingResult,
+        };
+        unsafe {
+            instance.get(PingResult::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for PingResult {
+    fn clear(&mut self) {
+        self.clear_source_address();
+        self.clear_destination_address();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for PingResult {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for PingResult {
+    fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
+        ::protobuf::reflect::ProtobufValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct PingPayload {
+    // message fields
+    pub task_id: u32,
+    pub transmit_time: u32,
+    pub source_address: ::protobuf::SingularPtrField<Address>,
+    pub destination_address: ::protobuf::SingularPtrField<Address>,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl PingPayload {
+    pub fn new() -> PingPayload {
+        ::std::default::Default::default()
+    }
+
+    // uint32 task_id = 1;
+
+    pub fn clear_task_id(&mut self) {
+        self.task_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_task_id(&mut self, v: u32) {
+        self.task_id = v;
+    }
+
+    pub fn get_task_id(&self) -> u32 {
+        self.task_id
+    }
+
+    // uint32 transmit_time = 2;
+
+    pub fn clear_transmit_time(&mut self) {
+        self.transmit_time = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_transmit_time(&mut self, v: u32) {
+        self.transmit_time = v;
+    }
+
+    pub fn get_transmit_time(&self) -> u32 {
+        self.transmit_time
+    }
+
+    // .Address source_address = 3;
+
+    pub fn clear_source_address(&mut self) {
+        self.source_address.clear();
+    }
+
+    pub fn has_source_address(&self) -> bool {
+        self.source_address.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_source_address(&mut self, v: Address) {
+        self.source_address = ::protobuf::SingularPtrField::some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_source_address(&mut self) -> &mut Address {
+        if self.source_address.is_none() {
+            self.source_address.set_default();
+        }
+        self.source_address.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_source_address(&mut self) -> Address {
+        self.source_address.take().unwrap_or_else(|| Address::new())
+    }
+
+    pub fn get_source_address(&self) -> &Address {
+        self.source_address.as_ref().unwrap_or_else(|| Address::default_instance())
+    }
+
+    // .Address destination_address = 4;
+
+    pub fn clear_destination_address(&mut self) {
+        self.destination_address.clear();
+    }
+
+    pub fn has_destination_address(&self) -> bool {
+        self.destination_address.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_destination_address(&mut self, v: Address) {
+        self.destination_address = ::protobuf::SingularPtrField::some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_destination_address(&mut self) -> &mut Address {
+        if self.destination_address.is_none() {
+            self.destination_address.set_default();
+        }
+        self.destination_address.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_destination_address(&mut self) -> Address {
+        self.destination_address.take().unwrap_or_else(|| Address::new())
+    }
+
+    pub fn get_destination_address(&self) -> &Address {
+        self.destination_address.as_ref().unwrap_or_else(|| Address::default_instance())
+    }
+}
+
+impl ::protobuf::Message for PingPayload {
+    fn is_initialized(&self) -> bool {
+        for v in &self.source_address {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        for v in &self.destination_address {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.task_id = tmp;
+                },
+                2 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.transmit_time = tmp;
+                },
+                3 => {
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.source_address)?;
+                },
+                4 => {
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.destination_address)?;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.task_id != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.task_id, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.transmit_time != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.transmit_time, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if let Some(ref v) = self.source_address.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        }
+        if let Some(ref v) = self.destination_address.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
+        if self.task_id != 0 {
+            os.write_uint32(1, self.task_id)?;
+        }
+        if self.transmit_time != 0 {
+            os.write_uint32(2, self.transmit_time)?;
+        }
+        if let Some(ref v) = self.source_address.as_ref() {
+            os.write_tag(3, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        }
+        if let Some(ref v) = self.destination_address.as_ref() {
+            os.write_tag(4, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &::std::any::Any {
+        self as &::std::any::Any
+    }
+    fn as_any_mut(&mut self) -> &mut ::std::any::Any {
+        self as &mut ::std::any::Any
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<::std::any::Any> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> PingPayload {
+        PingPayload::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const ::protobuf::reflect::MessageDescriptor,
+        };
+        unsafe {
+            descriptor.get(|| {
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "task_id",
+                    |m: &PingPayload| { &m.task_id },
+                    |m: &mut PingPayload| { &mut m.task_id },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "transmit_time",
+                    |m: &PingPayload| { &m.transmit_time },
+                    |m: &mut PingPayload| { &mut m.transmit_time },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<Address>>(
+                    "source_address",
+                    |m: &PingPayload| { &m.source_address },
+                    |m: &mut PingPayload| { &mut m.source_address },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<Address>>(
+                    "destination_address",
+                    |m: &PingPayload| { &m.destination_address },
+                    |m: &mut PingPayload| { &mut m.destination_address },
+                ));
+                ::protobuf::reflect::MessageDescriptor::new::<PingPayload>(
+                    "PingPayload",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static PingPayload {
+        static mut instance: ::protobuf::lazy::Lazy<PingPayload> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const PingPayload,
+        };
+        unsafe {
+            instance.get(PingPayload::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for PingPayload {
+    fn clear(&mut self) {
+        self.clear_task_id();
+        self.clear_transmit_time();
+        self.clear_source_address();
+        self.clear_destination_address();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for PingPayload {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for PingPayload {
     fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
         ::protobuf::reflect::ProtobufValueRef::Message(self)
     }
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\x18schema/verfploeter.proto\"\x07\n\x05Empty\"\x05\n\x03Ack\"[\n\x0cS\
-    cheduleTask\x12\x1f\n\x06client\x18\x01\x20\x01(\x0b2\x07.ClientR\x06cli\
-    ent\x12\"\n\x07ping_v4\x18\x02\x20\x01(\x0b2\x07.PingV4H\0R\x06pingV4B\
-    \x06\n\x04data\"/\n\nClientList\x12!\n\x07clients\x18\x01\x20\x03(\x0b2\
-    \x07.ClientR\x07clients\"E\n\x06Client\x12\x14\n\x05index\x18\x01\x20\
-    \x01(\rR\x05index\x12%\n\x08metadata\x18\x02\x20\x01(\x0b2\t.MetadataR\
-    \x08metadata\"J\n\x04Task\x12\x16\n\x06taskId\x18\x01\x20\x01(\rR\x06tas\
-    kId\x12\"\n\x07ping_v4\x18\x02\x20\x01(\x0b2\x07.PingV4H\0R\x06pingV4B\
-    \x06\n\x04data\"&\n\x08Metadata\x12\x1a\n\x08hostname\x18\x01\x20\x01(\t\
-    R\x08hostname\"d\n\x06PingV4\x12%\n\x0esource_address\x18\x01\x20\x01(\r\
-    R\rsourceAddress\x123\n\x15destination_addresses\x18\x02\x20\x03(\rR\x14\
-    destinationAddresses2w\n\x0bVerfploeter\x12\x1f\n\x07connect\x12\t.Metad\
-    ata\x1a\x05.Task\"\00\x01\x12\x20\n\x07do_task\x12\r.ScheduleTask\x1a\
-    \x04.Ack\"\0\x12%\n\x0clist_clients\x12\x06.Empty\x1a\x0b.ClientList\"\0\
-    J\xef\x08\n\x06\x12\x04\0\0)\x01\n\x08\n\x01\x0c\x12\x03\0\0\x12\n\n\n\
-    \x02\x06\0\x12\x04\x02\0\x06\x01\n\n\n\x03\x06\0\x01\x12\x03\x02\x08\x13\
-    \n\x0b\n\x04\x06\0\x02\0\x12\x03\x03\x042\n\x0c\n\x05\x06\0\x02\0\x01\
-    \x12\x03\x03\x08\x0f\n\x0c\n\x05\x06\0\x02\0\x02\x12\x03\x03\x10\x18\n\
-    \x0c\n\x05\x06\0\x02\0\x06\x12\x03\x03#)\n\x0c\n\x05\x06\0\x02\0\x03\x12\
-    \x03\x03*.\n\x0b\n\x04\x06\0\x02\x01\x12\x03\x04\x04.\n\x0c\n\x05\x06\0\
-    \x02\x01\x01\x12\x03\x04\x08\x0f\n\x0c\n\x05\x06\0\x02\x01\x02\x12\x03\
-    \x04\x10\x1c\n\x0c\n\x05\x06\0\x02\x01\x03\x12\x03\x04'*\n\x0b\n\x04\x06\
-    \0\x02\x02\x12\x03\x05\x043\n\x0c\n\x05\x06\0\x02\x02\x01\x12\x03\x05\
-    \x08\x14\n\x0c\n\x05\x06\0\x02\x02\x02\x12\x03\x05\x15\x1a\n\x0c\n\x05\
-    \x06\0\x02\x02\x03\x12\x03\x05%/\n\t\n\x02\x04\0\x12\x03\x08\0\x10\n\n\n\
-    \x03\x04\0\x01\x12\x03\x08\x08\r\n\t\n\x02\x04\x01\x12\x03\t\0\x0e\n\n\n\
-    \x03\x04\x01\x01\x12\x03\t\x08\x0b\n\n\n\x02\x04\x02\x12\x04\x0b\0\x10\
-    \x01\n\n\n\x03\x04\x02\x01\x12\x03\x0b\x08\x14\n\x0b\n\x04\x04\x02\x02\0\
-    \x12\x03\x0c\x04\x16\n\r\n\x05\x04\x02\x02\0\x04\x12\x04\x0c\x04\x0b\x16\
-    \n\x0c\n\x05\x04\x02\x02\0\x06\x12\x03\x0c\x04\n\n\x0c\n\x05\x04\x02\x02\
-    \0\x01\x12\x03\x0c\x0b\x11\n\x0c\n\x05\x04\x02\x02\0\x03\x12\x03\x0c\x14\
-    \x15\n\x0c\n\x04\x04\x02\x08\0\x12\x04\r\x04\x0f\x05\n\x0c\n\x05\x04\x02\
-    \x08\0\x01\x12\x03\r\n\x0e\n\x0b\n\x04\x04\x02\x02\x01\x12\x03\x0e\x08\
-    \x1b\n\x0c\n\x05\x04\x02\x02\x01\x06\x12\x03\x0e\x08\x0e\n\x0c\n\x05\x04\
-    \x02\x02\x01\x01\x12\x03\x0e\x0f\x16\n\x0c\n\x05\x04\x02\x02\x01\x03\x12\
-    \x03\x0e\x19\x1a\n\n\n\x02\x04\x03\x12\x04\x12\0\x14\x01\n\n\n\x03\x04\
-    \x03\x01\x12\x03\x12\x08\x12\n\x0b\n\x04\x04\x03\x02\0\x12\x03\x13\x04\
-    \x20\n\x0c\n\x05\x04\x03\x02\0\x04\x12\x03\x13\x04\x0c\n\x0c\n\x05\x04\
-    \x03\x02\0\x06\x12\x03\x13\r\x13\n\x0c\n\x05\x04\x03\x02\0\x01\x12\x03\
-    \x13\x14\x1b\n\x0c\n\x05\x04\x03\x02\0\x03\x12\x03\x13\x1e\x1f\n\n\n\x02\
-    \x04\x04\x12\x04\x16\0\x19\x01\n\n\n\x03\x04\x04\x01\x12\x03\x16\x08\x0e\
-    \n\x0b\n\x04\x04\x04\x02\0\x12\x03\x17\x04\x15\n\r\n\x05\x04\x04\x02\0\
-    \x04\x12\x04\x17\x04\x16\x10\n\x0c\n\x05\x04\x04\x02\0\x05\x12\x03\x17\
-    \x04\n\n\x0c\n\x05\x04\x04\x02\0\x01\x12\x03\x17\x0b\x10\n\x0c\n\x05\x04\
-    \x04\x02\0\x03\x12\x03\x17\x13\x14\n\x0b\n\x04\x04\x04\x02\x01\x12\x03\
-    \x18\x04\x1a\n\r\n\x05\x04\x04\x02\x01\x04\x12\x04\x18\x04\x17\x15\n\x0c\
-    \n\x05\x04\x04\x02\x01\x06\x12\x03\x18\x04\x0c\n\x0c\n\x05\x04\x04\x02\
-    \x01\x01\x12\x03\x18\r\x15\n\x0c\n\x05\x04\x04\x02\x01\x03\x12\x03\x18\
-    \x18\x19\n\n\n\x02\x04\x05\x12\x04\x1b\0\x20\x01\n\n\n\x03\x04\x05\x01\
-    \x12\x03\x1b\x08\x0c\n\x0b\n\x04\x04\x05\x02\0\x12\x03\x1c\x04\x16\n\r\n\
-    \x05\x04\x05\x02\0\x04\x12\x04\x1c\x04\x1b\x0e\n\x0c\n\x05\x04\x05\x02\0\
-    \x05\x12\x03\x1c\x04\n\n\x0c\n\x05\x04\x05\x02\0\x01\x12\x03\x1c\x0b\x11\
-    \n\x0c\n\x05\x04\x05\x02\0\x03\x12\x03\x1c\x14\x15\n\x0c\n\x04\x04\x05\
-    \x08\0\x12\x04\x1d\x04\x1f\x05\n\x0c\n\x05\x04\x05\x08\0\x01\x12\x03\x1d\
-    \n\x0e\n\x0b\n\x04\x04\x05\x02\x01\x12\x03\x1e\x08\x1b\n\x0c\n\x05\x04\
-    \x05\x02\x01\x06\x12\x03\x1e\x08\x0e\n\x0c\n\x05\x04\x05\x02\x01\x01\x12\
-    \x03\x1e\x0f\x16\n\x0c\n\x05\x04\x05\x02\x01\x03\x12\x03\x1e\x19\x1a\n\n\
-    \n\x02\x04\x06\x12\x04\"\0$\x01\n\n\n\x03\x04\x06\x01\x12\x03\"\x08\x10\
-    \n\x0b\n\x04\x04\x06\x02\0\x12\x03#\x04\x18\n\r\n\x05\x04\x06\x02\0\x04\
-    \x12\x04#\x04\"\x12\n\x0c\n\x05\x04\x06\x02\0\x05\x12\x03#\x04\n\n\x0c\n\
-    \x05\x04\x06\x02\0\x01\x12\x03#\x0b\x13\n\x0c\n\x05\x04\x06\x02\0\x03\
-    \x12\x03#\x16\x17\n\n\n\x02\x04\x07\x12\x04&\0)\x01\n\n\n\x03\x04\x07\
-    \x01\x12\x03&\x08\x0e\n\x0b\n\x04\x04\x07\x02\0\x12\x03'\x04\x1e\n\r\n\
-    \x05\x04\x07\x02\0\x04\x12\x04'\x04&\x10\n\x0c\n\x05\x04\x07\x02\0\x05\
-    \x12\x03'\x04\n\n\x0c\n\x05\x04\x07\x02\0\x01\x12\x03'\x0b\x19\n\x0c\n\
-    \x05\x04\x07\x02\0\x03\x12\x03'\x1c\x1d\n\x0b\n\x04\x04\x07\x02\x01\x12\
-    \x03(\x04.\n\x0c\n\x05\x04\x07\x02\x01\x04\x12\x03(\x04\x0c\n\x0c\n\x05\
-    \x04\x07\x02\x01\x05\x12\x03(\r\x13\n\x0c\n\x05\x04\x07\x02\x01\x01\x12\
-    \x03(\x14)\n\x0c\n\x05\x04\x07\x02\x01\x03\x12\x03(,-b\x06proto3\
+    \n\x18schema/verfploeter.proto\"\x07\n\x05Empty\"\x05\n\x03Ack\"!\n\x06T\
+    askId\x12\x17\n\x07task_id\x18\x01\x20\x01(\rR\x06taskId\"T\n\x0cSchedul\
+    eTask\x12\x1f\n\x06client\x18\x01\x20\x01(\x0b2\x07.ClientR\x06client\
+    \x12\x1b\n\x04ping\x18\x02\x20\x01(\x0b2\x05.PingH\0R\x04pingB\x06\n\x04\
+    data\"/\n\nClientList\x12!\n\x07clients\x18\x01\x20\x03(\x0b2\x07.Client\
+    R\x07clients\"E\n\x06Client\x12\x14\n\x05index\x18\x01\x20\x01(\rR\x05in\
+    dex\x12%\n\x08metadata\x18\x02\x20\x01(\x0b2\t.MetadataR\x08metadata\"D\
+    \n\x04Task\x12\x17\n\x07task_id\x18\x01\x20\x01(\rR\x06taskId\x12\x1b\n\
+    \x04ping\x18\x02\x20\x01(\x0b2\x05.PingH\0R\x04pingB\x06\n\x04data\"&\n\
+    \x08Metadata\x12\x1a\n\x08hostname\x18\x01\x20\x01(\tR\x08hostname\"v\n\
+    \x04Ping\x12/\n\x0esource_address\x18\x01\x20\x01(\x0b2\x08.AddressR\rso\
+    urceAddress\x12=\n\x15destination_addresses\x18\x02\x20\x03(\x0b2\x08.Ad\
+    dressR\x14destinationAddresses\"6\n\x07Address\x12\x10\n\x02v4\x18\x01\
+    \x20\x01(\rH\0R\x02v4\x12\x10\n\x02v6\x18\x02\x20\x01(\x0cH\0R\x02v6B\
+    \x07\n\x05value\"p\n\nTaskResult\x12\x17\n\x07task_id\x18\x01\x20\x01(\r\
+    R\x06taskId\x12\x1f\n\x06client\x18\x02\x20\x01(\x0b2\x07.ClientR\x06cli\
+    ent\x12(\n\x0bresult_list\x18\x03\x20\x03(\x0b2\x07.ResultR\nresultList\
+    \"4\n\x06Result\x12!\n\x04ping\x18\x01\x20\x01(\x0b2\x0b.PingResultH\0R\
+    \x04pingB\x07\n\x05value\"x\n\nPingResult\x12/\n\x0esource_address\x18\
+    \x02\x20\x01(\x0b2\x08.AddressR\rsourceAddress\x129\n\x13destination_add\
+    ress\x18\x03\x20\x01(\x0b2\x08.AddressR\x12destinationAddress\"\xb7\x01\
+    \n\x0bPingPayload\x12\x17\n\x07task_id\x18\x01\x20\x01(\rR\x06taskId\x12\
+    #\n\rtransmit_time\x18\x02\x20\x01(\rR\x0ctransmitTime\x12/\n\x0esource_\
+    address\x18\x03\x20\x01(\x0b2\x08.AddressR\rsourceAddress\x129\n\x13dest\
+    ination_address\x18\x04\x20\x01(\x0b2\x08.AddressR\x12destinationAddress\
+    2\xc9\x01\n\x0bVerfploeter\x12\x1f\n\x07connect\x12\t.Metadata\x1a\x05.T\
+    ask\"\00\x01\x12\x20\n\x07do_task\x12\r.ScheduleTask\x1a\x04.Ack\"\0\x12\
+    %\n\x0clist_clients\x12\x06.Empty\x1a\x0b.ClientList\"\0\x12\"\n\x0bsend\
+    _result\x12\x0b.TaskResult\x1a\x04.Ack\"\0\x12,\n\x10subscribe_result\
+    \x12\x07.TaskId\x1a\x0b.TaskResult\"\00\x01J\x91\x12\n\x06\x12\x04\0\0L\
+    \x01\n\x08\n\x01\x0c\x12\x03\0\0\x12\n\n\n\x02\x06\0\x12\x04\x02\0\x08\
+    \x01\n\n\n\x03\x06\0\x01\x12\x03\x02\x08\x13\n\x0b\n\x04\x06\0\x02\0\x12\
+    \x03\x03\x042\n\x0c\n\x05\x06\0\x02\0\x01\x12\x03\x03\x08\x0f\n\x0c\n\
+    \x05\x06\0\x02\0\x02\x12\x03\x03\x10\x18\n\x0c\n\x05\x06\0\x02\0\x06\x12\
+    \x03\x03#)\n\x0c\n\x05\x06\0\x02\0\x03\x12\x03\x03*.\n\x0b\n\x04\x06\0\
+    \x02\x01\x12\x03\x04\x04.\n\x0c\n\x05\x06\0\x02\x01\x01\x12\x03\x04\x08\
+    \x0f\n\x0c\n\x05\x06\0\x02\x01\x02\x12\x03\x04\x10\x1c\n\x0c\n\x05\x06\0\
+    \x02\x01\x03\x12\x03\x04'*\n\x0b\n\x04\x06\0\x02\x02\x12\x03\x05\x043\n\
+    \x0c\n\x05\x06\0\x02\x02\x01\x12\x03\x05\x08\x14\n\x0c\n\x05\x06\0\x02\
+    \x02\x02\x12\x03\x05\x15\x1a\n\x0c\n\x05\x06\0\x02\x02\x03\x12\x03\x05%/\
+    \n\x0b\n\x04\x06\0\x02\x03\x12\x03\x06\x040\n\x0c\n\x05\x06\0\x02\x03\
+    \x01\x12\x03\x06\x08\x13\n\x0c\n\x05\x06\0\x02\x03\x02\x12\x03\x06\x14\
+    \x1e\n\x0c\n\x05\x06\0\x02\x03\x03\x12\x03\x06),\n\x0b\n\x04\x06\0\x02\
+    \x04\x12\x03\x07\x04?\n\x0c\n\x05\x06\0\x02\x04\x01\x12\x03\x07\x08\x18\
+    \n\x0c\n\x05\x06\0\x02\x04\x02\x12\x03\x07\x19\x1f\n\x0c\n\x05\x06\0\x02\
+    \x04\x06\x12\x03\x07*0\n\x0c\n\x05\x06\0\x02\x04\x03\x12\x03\x071;\n\t\n\
+    \x02\x04\0\x12\x03\n\0\x10\n\n\n\x03\x04\0\x01\x12\x03\n\x08\r\n\t\n\x02\
+    \x04\x01\x12\x03\x0b\0\x0e\n\n\n\x03\x04\x01\x01\x12\x03\x0b\x08\x0b\n\t\
+    \n\x02\x04\x02\x12\x03\x0c\0&\n\n\n\x03\x04\x02\x01\x12\x03\x0c\x08\x0e\
+    \n\x0b\n\x04\x04\x02\x02\0\x12\x03\x0c\x11$\n\x0c\n\x05\x04\x02\x02\0\
+    \x04\x12\x03\x0c\x11\x10\n\x0c\n\x05\x04\x02\x02\0\x05\x12\x03\x0c\x11\
+    \x17\n\x0c\n\x05\x04\x02\x02\0\x01\x12\x03\x0c\x18\x1f\n\x0c\n\x05\x04\
+    \x02\x02\0\x03\x12\x03\x0c\"#\n\n\n\x02\x04\x03\x12\x04\x0e\0\x13\x01\n\
+    \n\n\x03\x04\x03\x01\x12\x03\x0e\x08\x14\n\x0b\n\x04\x04\x03\x02\0\x12\
+    \x03\x0f\x04\x16\n\r\n\x05\x04\x03\x02\0\x04\x12\x04\x0f\x04\x0e\x16\n\
+    \x0c\n\x05\x04\x03\x02\0\x06\x12\x03\x0f\x04\n\n\x0c\n\x05\x04\x03\x02\0\
+    \x01\x12\x03\x0f\x0b\x11\n\x0c\n\x05\x04\x03\x02\0\x03\x12\x03\x0f\x14\
+    \x15\n\x0c\n\x04\x04\x03\x08\0\x12\x04\x10\x04\x12\x05\n\x0c\n\x05\x04\
+    \x03\x08\0\x01\x12\x03\x10\n\x0e\n\x0b\n\x04\x04\x03\x02\x01\x12\x03\x11\
+    \x08\x16\n\x0c\n\x05\x04\x03\x02\x01\x06\x12\x03\x11\x08\x0c\n\x0c\n\x05\
+    \x04\x03\x02\x01\x01\x12\x03\x11\r\x11\n\x0c\n\x05\x04\x03\x02\x01\x03\
+    \x12\x03\x11\x14\x15\n\n\n\x02\x04\x04\x12\x04\x15\0\x17\x01\n\n\n\x03\
+    \x04\x04\x01\x12\x03\x15\x08\x12\n\x0b\n\x04\x04\x04\x02\0\x12\x03\x16\
+    \x04\x20\n\x0c\n\x05\x04\x04\x02\0\x04\x12\x03\x16\x04\x0c\n\x0c\n\x05\
+    \x04\x04\x02\0\x06\x12\x03\x16\r\x13\n\x0c\n\x05\x04\x04\x02\0\x01\x12\
+    \x03\x16\x14\x1b\n\x0c\n\x05\x04\x04\x02\0\x03\x12\x03\x16\x1e\x1f\n\n\n\
+    \x02\x04\x05\x12\x04\x19\0\x1c\x01\n\n\n\x03\x04\x05\x01\x12\x03\x19\x08\
+    \x0e\n\x0b\n\x04\x04\x05\x02\0\x12\x03\x1a\x04\x15\n\r\n\x05\x04\x05\x02\
+    \0\x04\x12\x04\x1a\x04\x19\x10\n\x0c\n\x05\x04\x05\x02\0\x05\x12\x03\x1a\
+    \x04\n\n\x0c\n\x05\x04\x05\x02\0\x01\x12\x03\x1a\x0b\x10\n\x0c\n\x05\x04\
+    \x05\x02\0\x03\x12\x03\x1a\x13\x14\n\x0b\n\x04\x04\x05\x02\x01\x12\x03\
+    \x1b\x04\x1a\n\r\n\x05\x04\x05\x02\x01\x04\x12\x04\x1b\x04\x1a\x15\n\x0c\
+    \n\x05\x04\x05\x02\x01\x06\x12\x03\x1b\x04\x0c\n\x0c\n\x05\x04\x05\x02\
+    \x01\x01\x12\x03\x1b\r\x15\n\x0c\n\x05\x04\x05\x02\x01\x03\x12\x03\x1b\
+    \x18\x19\n\n\n\x02\x04\x06\x12\x04\x1e\0#\x01\n\n\n\x03\x04\x06\x01\x12\
+    \x03\x1e\x08\x0c\n\x0b\n\x04\x04\x06\x02\0\x12\x03\x1f\x04\x17\n\r\n\x05\
+    \x04\x06\x02\0\x04\x12\x04\x1f\x04\x1e\x0e\n\x0c\n\x05\x04\x06\x02\0\x05\
+    \x12\x03\x1f\x04\n\n\x0c\n\x05\x04\x06\x02\0\x01\x12\x03\x1f\x0b\x12\n\
+    \x0c\n\x05\x04\x06\x02\0\x03\x12\x03\x1f\x15\x16\n\x0c\n\x04\x04\x06\x08\
+    \0\x12\x04\x20\x04\"\x05\n\x0c\n\x05\x04\x06\x08\0\x01\x12\x03\x20\n\x0e\
+    \n\x0b\n\x04\x04\x06\x02\x01\x12\x03!\x08\x16\n\x0c\n\x05\x04\x06\x02\
+    \x01\x06\x12\x03!\x08\x0c\n\x0c\n\x05\x04\x06\x02\x01\x01\x12\x03!\r\x11\
+    \n\x0c\n\x05\x04\x06\x02\x01\x03\x12\x03!\x14\x15\n\n\n\x02\x04\x07\x12\
+    \x04%\0'\x01\n\n\n\x03\x04\x07\x01\x12\x03%\x08\x10\n\x0b\n\x04\x04\x07\
+    \x02\0\x12\x03&\x04\x18\n\r\n\x05\x04\x07\x02\0\x04\x12\x04&\x04%\x12\n\
+    \x0c\n\x05\x04\x07\x02\0\x05\x12\x03&\x04\n\n\x0c\n\x05\x04\x07\x02\0\
+    \x01\x12\x03&\x0b\x13\n\x0c\n\x05\x04\x07\x02\0\x03\x12\x03&\x16\x17\n\n\
+    \n\x02\x04\x08\x12\x04)\0,\x01\n\n\n\x03\x04\x08\x01\x12\x03)\x08\x0c\n\
+    \x0b\n\x04\x04\x08\x02\0\x12\x03*\x04\x1f\n\r\n\x05\x04\x08\x02\0\x04\
+    \x12\x04*\x04)\x0e\n\x0c\n\x05\x04\x08\x02\0\x06\x12\x03*\x04\x0b\n\x0c\
+    \n\x05\x04\x08\x02\0\x01\x12\x03*\x0c\x1a\n\x0c\n\x05\x04\x08\x02\0\x03\
+    \x12\x03*\x1d\x1e\n\x0b\n\x04\x04\x08\x02\x01\x12\x03+\x04/\n\x0c\n\x05\
+    \x04\x08\x02\x01\x04\x12\x03+\x04\x0c\n\x0c\n\x05\x04\x08\x02\x01\x06\
+    \x12\x03+\r\x14\n\x0c\n\x05\x04\x08\x02\x01\x01\x12\x03+\x15*\n\x0c\n\
+    \x05\x04\x08\x02\x01\x03\x12\x03+-.\n\n\n\x02\x04\t\x12\x04/\04\x01\n\n\
+    \n\x03\x04\t\x01\x12\x03/\x08\x0f\n\x0c\n\x04\x04\t\x08\0\x12\x040\x043\
+    \x05\n\x0c\n\x05\x04\t\x08\0\x01\x12\x030\n\x0f\n\x0b\n\x04\x04\t\x02\0\
+    \x12\x031\x08\x16\n\x0c\n\x05\x04\t\x02\0\x05\x12\x031\x08\x0e\n\x0c\n\
+    \x05\x04\t\x02\0\x01\x12\x031\x0f\x11\n\x0c\n\x05\x04\t\x02\0\x03\x12\
+    \x031\x14\x15\n\x0b\n\x04\x04\t\x02\x01\x12\x032\x08\x15\n\x0c\n\x05\x04\
+    \t\x02\x01\x05\x12\x032\x08\r\n\x0c\n\x05\x04\t\x02\x01\x01\x12\x032\x0e\
+    \x10\n\x0c\n\x05\x04\t\x02\x01\x03\x12\x032\x13\x14\n\n\n\x02\x04\n\x12\
+    \x046\0:\x01\n\n\n\x03\x04\n\x01\x12\x036\x08\x12\n\x0b\n\x04\x04\n\x02\
+    \0\x12\x037\x04\x17\n\r\n\x05\x04\n\x02\0\x04\x12\x047\x046\x14\n\x0c\n\
+    \x05\x04\n\x02\0\x05\x12\x037\x04\n\n\x0c\n\x05\x04\n\x02\0\x01\x12\x037\
+    \x0b\x12\n\x0c\n\x05\x04\n\x02\0\x03\x12\x037\x15\x16\n\x0b\n\x04\x04\n\
+    \x02\x01\x12\x038\x04\x16\n\r\n\x05\x04\n\x02\x01\x04\x12\x048\x047\x17\
+    \n\x0c\n\x05\x04\n\x02\x01\x06\x12\x038\x04\n\n\x0c\n\x05\x04\n\x02\x01\
+    \x01\x12\x038\x0b\x11\n\x0c\n\x05\x04\n\x02\x01\x03\x12\x038\x14\x15\n\
+    \x0b\n\x04\x04\n\x02\x02\x12\x039\x04$\n\x0c\n\x05\x04\n\x02\x02\x04\x12\
+    \x039\x04\x0c\n\x0c\n\x05\x04\n\x02\x02\x06\x12\x039\r\x13\n\x0c\n\x05\
+    \x04\n\x02\x02\x01\x12\x039\x14\x1f\n\x0c\n\x05\x04\n\x02\x02\x03\x12\
+    \x039\"#\n\n\n\x02\x04\x0b\x12\x04<\0@\x01\n\n\n\x03\x04\x0b\x01\x12\x03\
+    <\x08\x0e\n\x0c\n\x04\x04\x0b\x08\0\x12\x04=\x04?\x05\n\x0c\n\x05\x04\
+    \x0b\x08\0\x01\x12\x03=\n\x0f\n\x0b\n\x04\x04\x0b\x02\0\x12\x03>\x08\x1c\
+    \n\x0c\n\x05\x04\x0b\x02\0\x06\x12\x03>\x08\x12\n\x0c\n\x05\x04\x0b\x02\
+    \0\x01\x12\x03>\x13\x17\n\x0c\n\x05\x04\x0b\x02\0\x03\x12\x03>\x1a\x1b\n\
+    \n\n\x02\x04\x0c\x12\x04B\0E\x01\n\n\n\x03\x04\x0c\x01\x12\x03B\x08\x12\
+    \n\x0b\n\x04\x04\x0c\x02\0\x12\x03C\x04\x1f\n\r\n\x05\x04\x0c\x02\0\x04\
+    \x12\x04C\x04B\x14\n\x0c\n\x05\x04\x0c\x02\0\x06\x12\x03C\x04\x0b\n\x0c\
+    \n\x05\x04\x0c\x02\0\x01\x12\x03C\x0c\x1a\n\x0c\n\x05\x04\x0c\x02\0\x03\
+    \x12\x03C\x1d\x1e\n\x0b\n\x04\x04\x0c\x02\x01\x12\x03D\x04$\n\r\n\x05\
+    \x04\x0c\x02\x01\x04\x12\x04D\x04C\x1f\n\x0c\n\x05\x04\x0c\x02\x01\x06\
+    \x12\x03D\x04\x0b\n\x0c\n\x05\x04\x0c\x02\x01\x01\x12\x03D\x0c\x1f\n\x0c\
+    \n\x05\x04\x0c\x02\x01\x03\x12\x03D\"#\n\n\n\x02\x04\r\x12\x04G\0L\x01\n\
+    \n\n\x03\x04\r\x01\x12\x03G\x08\x13\n\x0b\n\x04\x04\r\x02\0\x12\x03H\x04\
+    \x17\n\r\n\x05\x04\r\x02\0\x04\x12\x04H\x04G\x15\n\x0c\n\x05\x04\r\x02\0\
+    \x05\x12\x03H\x04\n\n\x0c\n\x05\x04\r\x02\0\x01\x12\x03H\x0b\x12\n\x0c\n\
+    \x05\x04\r\x02\0\x03\x12\x03H\x15\x16\n\x0b\n\x04\x04\r\x02\x01\x12\x03I\
+    \x04\x1d\n\r\n\x05\x04\r\x02\x01\x04\x12\x04I\x04H\x17\n\x0c\n\x05\x04\r\
+    \x02\x01\x05\x12\x03I\x04\n\n\x0c\n\x05\x04\r\x02\x01\x01\x12\x03I\x0b\
+    \x18\n\x0c\n\x05\x04\r\x02\x01\x03\x12\x03I\x1b\x1c\n\x0b\n\x04\x04\r\
+    \x02\x02\x12\x03J\x04\x1f\n\r\n\x05\x04\r\x02\x02\x04\x12\x04J\x04I\x1d\
+    \n\x0c\n\x05\x04\r\x02\x02\x06\x12\x03J\x04\x0b\n\x0c\n\x05\x04\r\x02\
+    \x02\x01\x12\x03J\x0c\x1a\n\x0c\n\x05\x04\r\x02\x02\x03\x12\x03J\x1d\x1e\
+    \n\x0b\n\x04\x04\r\x02\x03\x12\x03K\x04$\n\r\n\x05\x04\r\x02\x03\x04\x12\
+    \x04K\x04J\x1f\n\x0c\n\x05\x04\r\x02\x03\x06\x12\x03K\x04\x0b\n\x0c\n\
+    \x05\x04\r\x02\x03\x01\x12\x03K\x0c\x1f\n\x0c\n\x05\x04\r\x02\x03\x03\
+    \x12\x03K\"#b\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy {

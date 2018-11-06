@@ -12,12 +12,10 @@ mod cli;
 mod client;
 mod schema;
 mod server;
+mod net;
 
-use self::schema::verfploeter::{PingV4, Task};
 use clap::{App, Arg, ArgMatches, SubCommand};
-use futures::*;
-use protobuf::RepeatedField;
-use std::net::Ipv4Addr;
+
 use std::thread;
 use std::time::Duration;
 
@@ -30,7 +28,7 @@ fn main() {
 
     info!("Starting verfploeter v{}", env!("CARGO_PKG_VERSION"));
 
-    if let Some(server_matches) = matches.subcommand_matches("server") {
+    if matches.subcommand_matches("server").is_some() {
         let mut s = server::Server::new();
         s.start();
 
@@ -39,13 +37,14 @@ fn main() {
             thread::sleep(Duration::from_secs(1));
         }
     } else if let Some(client_matches) = matches.subcommand_matches("client") {
-        let mut c = client::Client::new();
+        let c = client::Client::new(client_matches);
         c.start();
     } else if let Some(cli_matches) = matches.subcommand_matches("cli") {
         cli::execute(cli_matches);
     } else {
         error!("run with --help to see options");
     }
+    debug!("exiting");
 }
 
 fn parse_cmd<'a>() -> ArgMatches<'a> {
@@ -54,7 +53,23 @@ fn parse_cmd<'a>() -> ArgMatches<'a> {
         .author("Wouter B. de Vries <w.b.devries@utwente.nl")
         .about("Performs measurements")
         .subcommand(SubCommand::with_name("server").about("Launches the verfploeter server"))
-        .subcommand(SubCommand::with_name("client").about("Launches the verfploeter client"))
+        .subcommand(
+            SubCommand::with_name("client").about("Launches the verfploeter client")
+                .arg(
+                    Arg::with_name("hostname")
+                        .short("h")
+                        .takes_value(true)
+                        .help("hostname for this client")
+                        .required(true)
+                )
+                .arg(
+                    Arg::with_name("server")
+                        .short("s")
+                        .takes_value(true)
+                        .help("hostname/ip address:port of the server")
+                        .default_value("127.0.0.1:50001")
+                )
+        )
         .subcommand(
             SubCommand::with_name("cli").about("Verfploeter CLI")
                 .subcommand(SubCommand::with_name("client-list").about("retrieves a list of currently connected clients from the server"))
@@ -68,7 +83,10 @@ fn parse_cmd<'a>() -> ArgMatches<'a> {
                     .arg(Arg::with_name("IP_FILE").help("A file that contains IP address to ping")
                     .required(true)
                     .index(3))
-
+                    .arg(Arg::with_name("stream")
+                        .short("s")
+                        .multiple(false)
+                        .help("Stream results to stdout"))
                 )
         )
         .get_matches()

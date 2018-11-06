@@ -4,15 +4,18 @@ service Verfploeter {
     rpc connect(Metadata) returns (stream Task) {}
     rpc do_task(ScheduleTask) returns (Ack) {}
     rpc list_clients(Empty) returns (ClientList) {}
+    rpc send_result(TaskResult) returns (Ack) {}
+    rpc subscribe_result(TaskId) returns (stream TaskResult) {}
 }
 
 message Empty {}
 message Ack {}
+message TaskId { uint32 task_id = 1; }
 
 message ScheduleTask {
     Client client = 1;
     oneof data {
-        PingV4 ping_v4 = 2;
+        Ping ping = 2;
     }
 }
 
@@ -26,9 +29,9 @@ message Client {
 }
 
 message Task {
-    uint32 taskId = 1;
+    uint32 task_id = 1;
     oneof data {
-        PingV4 ping_v4 = 2;
+        Ping ping = 2;
     }
 }
 
@@ -36,7 +39,39 @@ message Metadata {
     string hostname = 1;
 }
 
-message PingV4 {
-    uint32 source_address = 1;
-    repeated uint32 destination_addresses = 2;
+message Ping {
+    Address source_address = 1;
+    repeated Address destination_addresses = 2;
+}
+
+
+message Address {
+    oneof value {
+        uint32 v4 = 1;
+        bytes v6 = 2;
+    }
+}
+
+message TaskResult {
+    uint32 task_id = 1;
+    Client client = 2;
+    repeated Result result_list = 3;
+}
+
+message Result {
+    oneof value {
+        PingResult ping = 1;
+    }
+}
+
+message PingResult {
+    Address source_address = 2;
+    Address destination_address = 3;
+}
+
+message PingPayload {
+    uint32 task_id = 1;
+    uint32 transmit_time = 2;
+    Address source_address = 3;
+    Address destination_address = 4;
 }
