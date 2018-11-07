@@ -14,6 +14,7 @@ use std::collections::HashMap;
 mod handlers;
 use self::handlers::ping::{PingInbound,PingOutbound};
 use self::handlers::{TaskHandler, ChannelType};
+use std::time::Duration;
 
 pub struct Client {
     grpc_client: Arc<VerfploeterClient>,
@@ -26,7 +27,7 @@ impl Client {
     pub fn new(args: &ArgMatches) -> Client {
         let host = args.value_of("server").unwrap();
         let env = Arc::new(Environment::new(1));
-        let channel = ChannelBuilder::new(env).connect(host);
+        let channel = ChannelBuilder::new(env).keepalive_time(Duration::from_secs(5)).keepalive_timeout(Duration::from_secs(5)).connect(host);
         let grpc_client = Arc::new(VerfploeterClient::new(channel));
 
         let mut task_handlers: HashMap<String, Box<dyn TaskHandler>> = HashMap::new();
@@ -84,9 +85,11 @@ impl Client {
 
             // Wait for process to finish
             finish_rx.map(|_| ()).wait().unwrap();
+            debug!("task stream closed");
 
             // Stop all task handlers
             for (i, v) in &mut self.task_handlers {
+                debug!("signaling {} to exit", i);
                 v.exit();
                 debug!("exited {} task handler", i);
             }
