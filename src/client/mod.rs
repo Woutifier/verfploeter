@@ -6,7 +6,8 @@ use super::schema::verfploeter_grpc::VerfploeterClient;
 use futures::*;
 use futures::sync::oneshot;
 use grpcio::{ChannelBuilder, Environment};
-use std::sync::mpsc::{Receiver, Sender};
+//use std::sync::mpsc::{Receiver, Sender};
+use futures::sync::mpsc::{Receiver, Sender};
 use std::sync::Arc;
 use clap::ArgMatches;
 use std::collections::HashMap;
@@ -61,19 +62,15 @@ impl Client {
 
             // For now we only have a ping task, in the future we can have a match here
             // that sends tasks to different threads for processing
-            let f = stream
-                .map({
-                    let tx = tx.clone();
-                    move |i| {
-                        if i.has_ping() {
-                            tx.clone().send(i).unwrap();
-                        }
+            let f = stream.for_each({
+                let tx = tx.clone();
+                move |i| {
+                    if i.has_ping() {
+                        tx.clone().send(i).wait().unwrap();
                     }
-                })
-                .map_err(|_| ())
-                .collect()
-                .map(|_| ())
-                .map_err(|_| {finish_tx.send(()).unwrap()});
+                    return futures::future::ok(());
+                }
+            }).map_err(|_| finish_tx.send(()).unwrap());
 
             self.grpc_client.spawn(f);
 
