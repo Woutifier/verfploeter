@@ -35,7 +35,16 @@ impl fmt::Display for TaskResult {
         for result in self.get_result_list() {
             if result.has_ping() {
                 let ping = result.get_ping();
-                write!(f, "{}|{}|{}|{}", task_id, client_id, IpAddr::from(ping.get_source_address()), IpAddr::from(ping.get_destination_address()));
+                write!(
+                    f,
+                    "{}|{}|{}|{}|{}|{}",
+                    task_id,
+                    client_id,
+                    IpAddr::from(ping.get_source_address()),
+                    IpAddr::from(ping.get_destination_address()),
+                    IpAddr::from(ping.get_payload().get_source_address()),
+                    IpAddr::from(ping.get_payload().get_destination_address()),
+                );
             } else {
                 write!(f, "{}|{}|unsupported-result", task_id, client_id);
             }

@@ -9,9 +9,12 @@ use grpcio::{
 };
 use protobuf::RepeatedField;
 use std::collections::HashMap;
-use std::net::{IpAddr};
+use std::net::IpAddr;
+use std::ops::Add;
 use std::ops::AddAssign;
 use std::sync::{Arc, Mutex, RwLock};
+use std::thread;
+use std::time::{Duration, Instant};
 
 pub struct Server {
     pub connection_list: ConnectionList,
@@ -31,6 +34,7 @@ impl Server {
         let s = VerfploeterService {
             connection_manager,
             subscription_list: Arc::new(RwLock::new(HashMap::new())),
+            current_task_id: Arc::new(Mutex::new(0)),
         };
         let service = verfploeter_grpc::create_verfploeter(s);
         let grpc_server = ServerBuilder::new(env)
@@ -41,7 +45,6 @@ impl Server {
 
         Server {
             connection_list: connections,
-
             grpc_server,
         }
     }
@@ -64,6 +67,7 @@ pub struct Connection {
 struct VerfploeterService {
     connection_manager: Arc<ConnectionManager>,
     subscription_list: Arc<RwLock<HashMap<u32, Vec<Sender<TaskResult>>>>>,
+    current_task_id: Arc<Mutex<u32>>, // todo: replace this with AtomicU32 when it stabilizes
 }
 
 impl VerfploeterService {
@@ -101,7 +105,7 @@ impl Verfploeter for VerfploeterService {
             connection_id,
             Connection {
                 metadata,
-                channel: tx,
+                channel: tx.clone(),
             },
         );
 
@@ -119,23 +123,48 @@ impl Verfploeter for VerfploeterService {
                 move |_| cm.unregister_connection(connection_id)
             });
 
+        // Send periodic keepalives
+        // todo: afaik the underlying connection knows when it dies, even without this, but as of now it only notices this when we try to send something
+        thread::spawn(move || loop {
+            thread::sleep(Duration::from_secs(5));
+            let mut t = Task::new();
+            t.set_empty(Empty::new());
+            if tx.clone().send(t).wait().is_err() {
+                break;
+            }
+        });
+
         ctx.spawn(f);
     }
 
     fn do_task(&mut self, ctx: RpcContext, mut req: ScheduleTask, sink: UnarySink<Ack>) {
         debug!("received do_task request");
+        let mut ack = Ack::new();
+
+        // Handle a ping task
         if req.has_ping() {
             let tx = self
                 .connection_manager
                 .get_client_tx(req.get_client().index)
                 .unwrap();
             let mut t = Task::new();
-            t.set_task_id(0);
+
+            // obtain task id
+            let mut task_id: u32 = 0;
+            {
+                let mut current_task_id = self.current_task_id.lock().unwrap();
+                task_id = current_task_id.clone();
+                current_task_id.add_assign(1);
+            }
+            ack.set_task_id(task_id);
+
+            t.set_task_id(task_id);
             t.set_ping(req.take_ping());
 
             tx.send(t).wait().unwrap();
         }
-        let f = sink.success(Ack::new()).map_err(|_| ());
+
+        let f = sink.success(ack).map_err(|_| ());
         ctx.spawn(f);
     }
 

@@ -1,7 +1,7 @@
-use std::net::{Ipv4Addr};
+use super::byteorder::{LittleEndian, NetworkEndian, ReadBytesExt, WriteBytesExt};
 use std::io::Cursor;
-use super::byteorder::{NetworkEndian, WriteBytesExt, ReadBytesExt, LittleEndian};
 use std::io::Write;
+use std::net::Ipv4Addr;
 
 #[derive(Debug)]
 pub struct IPv4Packet {

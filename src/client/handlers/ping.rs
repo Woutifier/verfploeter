@@ -1,25 +1,28 @@
+use super::{ChannelType, TaskHandler};
+use crate::net::{ICMP4Packet, IPv4Packet, PacketPayload};
+use crate::schema::verfploeter::{
+    Client, Metadata, PingPayload, PingResult, Result, Task, TaskResult,
+};
+use crate::schema::verfploeter_grpc::VerfploeterClient;
+use socket2::{Domain, Protocol, Socket, Type};
+use std::sync::Arc;
 use std::thread;
 use std::thread::JoinHandle;
-use std::sync::Arc;
-use socket2::{Socket, Domain, Protocol, Type};
-use super::{TaskHandler, ChannelType};
-use crate::net::{IPv4Packet, ICMP4Packet};
-use crate::schema::verfploeter::{TaskResult, PingResult, PingPayload, Task, Client, Result, Metadata};
-use crate::schema::verfploeter_grpc::VerfploeterClient;
 
-use std::net::{SocketAddr, Shutdown, Ipv4Addr};
-use protobuf::Message;
-use futures::sync::mpsc::{channel, Sender, Receiver};
+use futures::sync::mpsc::{channel, Receiver, Sender};
 use futures::sync::oneshot;
-use futures::Sink;
 use futures::Future;
+use futures::Sink;
 use futures::Stream;
+use protobuf::Message;
+use protobuf;
+use std::net::{Ipv4Addr, Shutdown, SocketAddr};
 
 pub struct PingInbound {
     handles: Vec<JoinHandle<()>>,
     socket: Arc<Socket>,
     grpc_client: Arc<VerfploeterClient>,
-    metadata: Metadata
+    metadata: Metadata,
 }
 
 impl TaskHandler for PingInbound {
@@ -49,7 +52,20 @@ impl TaskHandler for PingInbound {
             let metadata = self.metadata.clone();
             move || {
                 rx.for_each(|packet| {
-                    println!("packet! {:?}", packet);
+                    let mut ping_payload = None;
+                    if let PacketPayload::ICMPv4 {value} = packet.payload {
+                        let payload = protobuf::parse_from_bytes::<PingPayload>(&value.body);
+                        if let Ok(payload) = payload {
+                            ping_payload = Some(payload);
+                        }
+                    }
+
+                    // Don't do anything if we don't have a proper payload
+                    if ping_payload.is_none() {
+                        return futures::future::ok(());
+                    }
+                    let ping_payload = ping_payload.unwrap();
+
                     let mut tr = TaskResult::new();
                     let mut client = Client::new();
                     client.set_metadata(metadata.clone());
@@ -57,16 +73,22 @@ impl TaskHandler for PingInbound {
                     let mut result = Result::new();
                     let mut pr = PingResult::new();
 
+                    let task_id = ping_payload.get_task_id();
+                    pr.set_payload(ping_payload);
                     pr.set_source_address(packet.source_address.into());
                     pr.set_destination_address(packet.destination_address.into());
                     result.set_ping(pr);
                     tr.mut_result_list().push(result);
+                    tr.set_task_id(task_id);
 
                     grpc_client.send_result(&tr).unwrap();
 
                     return futures::future::ok(());
-                }).map_err(|_| ()).wait();
-        }});
+                })
+                .map_err(|_| ())
+                .wait();
+            }
+        });
         self.handles.push(handle);
         self.handles.push(handle2);
     }
@@ -95,7 +117,7 @@ impl PingInbound {
             handles: Vec::new(),
             socket,
             grpc_client,
-            metadata
+            metadata,
         }
     }
 }
@@ -110,14 +132,20 @@ pub struct PingOutbound {
 
 impl TaskHandler for PingOutbound {
     fn start(&mut self) {
-        let handle = thread::spawn({let rx = self.rx.take().unwrap(); let shutdown_rx = self.shutdown_rx.take().unwrap(); move || {
-            let handler = rx.for_each(|i| {
-                PingOutbound::perform_ping(&i);
-                return futures::future::ok(());
-            }).map_err(|_| ());
-            let poison = shutdown_rx.map_err(|_| ());
-            handler.select(poison).wait();
-        }});
+        let handle = thread::spawn({
+            let rx = self.rx.take().unwrap();
+            let shutdown_rx = self.shutdown_rx.take().unwrap();
+            move || {
+                let handler = rx
+                    .for_each(|i| {
+                        PingOutbound::perform_ping(&i);
+                        return futures::future::ok(());
+                    })
+                    .map_err(|_| ());
+                let poison = shutdown_rx.map_err(|_| ());
+                handler.select(poison).wait();
+            }
+        });
         self.handle = Some(handle);
     }
 
@@ -129,7 +157,10 @@ impl TaskHandler for PingOutbound {
     }
 
     fn get_channel(&mut self) -> ChannelType {
-        ChannelType::Task{sender: Some(self.tx.clone()), receiver: None}
+        ChannelType::Task {
+            sender: Some(self.tx.clone()),
+            receiver: None,
+        }
     }
 }
 
@@ -137,14 +168,21 @@ impl PingOutbound {
     pub fn new() -> PingOutbound {
         let (tx, rx): (Sender<Task>, Receiver<Task>) = channel(1);
         let (shutdown_tx, shutdown_rx) = oneshot::channel();
-        PingOutbound { tx, rx: Some(rx), shutdown_tx: Some(shutdown_tx), shutdown_rx: Some(shutdown_rx), handle: None }
+        PingOutbound {
+            tx,
+            rx: Some(rx),
+            shutdown_tx: Some(shutdown_tx),
+            shutdown_rx: Some(shutdown_rx),
+            handle: None,
+        }
     }
 
     fn perform_ping(task: &Task) {
         info!(
-            "performing outbound ping from {}, to {} addresses",
+            "performing outbound ping from {}, to {} addresses, task id: {}",
             Ipv4Addr::from(task.get_ping().get_source_address().get_v4()),
-            task.get_ping().get_destination_addresses().len()
+            task.get_ping().get_destination_addresses().len(),
+            task.get_task_id()
         );
         let bindaddress = format!(
             "{}:0",

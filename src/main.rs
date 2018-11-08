@@ -10,9 +10,9 @@ extern crate socket2;
 
 mod cli;
 mod client;
+mod net;
 mod schema;
 mod server;
-mod net;
 
 use clap::{App, Arg, ArgMatches, SubCommand};
 

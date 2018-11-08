@@ -62,18 +62,23 @@ pub fn execute(args: &ArgMatches) {
         schedule_task.set_ping(ping);
         schedule_task.set_client(client);
 
+        let mut scheduled_task_id = None;
         // Send task to server
         match grpc_client.do_task(&schedule_task) {
-            Ok(_) => println!("successfully scheduled task"),
+            Ok(ack) => { println!("successfully scheduled task, id: {}", ack.get_task_id()); scheduled_task_id = Some(ack.get_task_id()); }
             Err(e) => error!("unable to schedule task: {} ({})", e.description(), e),
         }
 
-        let result = grpc_client.subscribe_result(&TaskId::new()).unwrap();
-        result
-            .map(|i| println!("{}", i))
-            .map_err(|_| ())
-            .wait()
-            .for_each(drop);
+        if scheduled_task_id.is_some() {
+            let mut request_task_id = TaskId::new();
+            request_task_id.set_task_id(scheduled_task_id.unwrap());
+            let result = grpc_client.subscribe_result(&request_task_id).unwrap();
+            result
+                .map(|i| println!("{}", i))
+                .map_err(|_| ())
+                .wait()
+                .for_each(drop);
+        }
     } else {
         unimplemented!();
     }

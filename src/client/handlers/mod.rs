@@ -1,9 +1,12 @@
 pub mod ping;
-use super::{Task, Sender, Receiver};
+use super::{Receiver, Sender, Task};
 
 pub enum ChannelType {
-    Task { sender: Option<Sender<Task>>, receiver: Option<Receiver<Task>> },
-    None
+    Task {
+        sender: Option<Sender<Task>>,
+        receiver: Option<Receiver<Task>>,
+    },
+    None,
 }
 
 pub trait TaskHandler {

@@ -9,7 +9,9 @@ service Verfploeter {
 }
 
 message Empty {}
-message Ack {}
+message Ack {
+    uint32 task_id = 1;
+}
 message TaskId { uint32 task_id = 1; }
 
 message ScheduleTask {
@@ -32,6 +34,7 @@ message Task {
     uint32 task_id = 1;
     oneof data {
         Ping ping = 2;
+        Empty empty = 3;
     }
 }
 
@@ -65,8 +68,9 @@ message Result {
 }
 
 message PingResult {
-    Address source_address = 2;
-    Address destination_address = 3;
+    Address source_address = 1;
+    Address destination_address = 2;
+    PingPayload payload = 3;
 }
 
 message PingPayload {
