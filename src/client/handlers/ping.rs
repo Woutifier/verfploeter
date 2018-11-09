@@ -27,7 +27,7 @@ pub struct PingInbound {
 
 impl TaskHandler for PingInbound {
     fn start(&mut self) {
-        let (tx, rx): (Sender<IPv4Packet>, Receiver<IPv4Packet>) = channel(1);
+        let (tx, rx): (Sender<IPv4Packet>, Receiver<IPv4Packet>) = channel(1024);
         let handle = thread::spawn({
             let socket = self.socket.clone();
             move || {
@@ -62,6 +62,7 @@ impl TaskHandler for PingInbound {
 
                     // Don't do anything if we don't have a proper payload
                     if ping_payload.is_none() {
+                        debug!("invalid ping payload");
                         return futures::future::ok(());
                     }
                     let ping_payload = ping_payload.unwrap();
