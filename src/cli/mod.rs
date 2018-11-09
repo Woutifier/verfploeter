@@ -13,8 +13,9 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 pub fn execute(args: &ArgMatches) {
+    let server = args.value_of("server").unwrap();
     let env = Arc::new(Environment::new(1));
-    let channel = ChannelBuilder::new(env).connect("127.0.0.1:50001");
+    let channel = ChannelBuilder::new(env).connect(server);
     let grpc_client = VerfploeterClient::new(channel);
 
     if args.subcommand_matches("client-list").is_some() {

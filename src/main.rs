@@ -72,6 +72,13 @@ fn parse_cmd<'a>() -> ArgMatches<'a> {
         )
         .subcommand(
             SubCommand::with_name("cli").about("Verfploeter CLI")
+                .arg(
+                    Arg::with_name("server")
+                        .short("s")
+                        .takes_value(true)
+                        .help("hostname/ip address:port of the server")
+                        .default_value("127.0.0.1:50001")
+                )
                 .subcommand(SubCommand::with_name("client-list").about("retrieves a list of currently connected clients from the server"))
                 .subcommand(SubCommand::with_name("do-verfploeter").about("performs verfploeter on the indicated client")
                     .arg(Arg::with_name("CLIENT_INDEX").help("Sets the client to run verfploeter from (i.e. the outbound ping)")
