@@ -42,7 +42,7 @@ impl TaskHandler for PingInbound {
                     let packet = IPv4Packet::from(&buffer[..result]);
                     debug!("packet: {:?}", &packet);
                     //tx.clone().send(packet)
-                    tx.clone().send(packet).wait();
+                    tx.clone().send(packet).wait().expect("unable to send packet to tx channel");
                 }
             }
         });
@@ -112,9 +112,9 @@ impl PingInbound {
     pub fn new(metadata: Metadata, grpc_client: Arc<VerfploeterClient>) -> PingInbound {
         let socket =
             Arc::new(Socket::new(Domain::ipv4(), Type::raw(), Some(Protocol::icmpv4())).unwrap());
-        socket
+        /*socket
             .bind(&"0.0.0.0:0".parse::<SocketAddr>().unwrap().into())
-            .unwrap();
+            .unwrap();*/
 
         PingInbound {
             handles: Vec::new(),

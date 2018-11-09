@@ -23,7 +23,7 @@ pub struct Server {
 
 impl Server {
     pub fn new() -> Server {
-        let env = Arc::new(Environment::new(1));
+        let env = Arc::new(Environment::new(10));
 
         let connections = Arc::new(Mutex::new(HashMap::new()));
         let connection_manager = Arc::new(ConnectionManager {
