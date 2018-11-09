@@ -81,7 +81,9 @@ impl TaskHandler for PingInbound {
                     tr.mut_result_list().push(result);
                     tr.set_task_id(task_id);
 
-                    grpc_client.send_result(&tr).unwrap();
+                    if let Err(e) = grpc_client.send_result(&tr) {
+                        error!("failed to send result to server: {}", e);
+                    }
 
                     return futures::future::ok(());
                 })
@@ -166,7 +168,7 @@ impl TaskHandler for PingOutbound {
 
 impl PingOutbound {
     pub fn new() -> PingOutbound {
-        let (tx, rx): (Sender<Task>, Receiver<Task>) = channel(1);
+        let (tx, rx): (Sender<Task>, Receiver<Task>) = channel(10);
         let (shutdown_tx, shutdown_rx) = oneshot::channel();
         PingOutbound {
             tx,
