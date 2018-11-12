@@ -20,12 +20,17 @@ use ratelimit_meter::{DirectRateLimiter, LeakyBucket};
 use std::net::{Ipv4Addr, Shutdown, SocketAddr};
 use std::num::NonZeroU32;
 use std::time::Duration;
+use std::sync::Mutex;
+use std::u32;
 
 pub struct PingInbound {
     handles: Vec<JoinHandle<()>>,
     socket: Arc<Socket>,
     grpc_client: Arc<VerfploeterClient>,
     metadata: Metadata,
+    result_queue: Arc<Mutex<Option<Vec<Result>>>>,
+    poison_rx: oneshot::Receiver<()>,
+    poison_tx: Option<oneshot::Sender<()>>
 }
 
 impl TaskHandler for PingInbound {
@@ -54,10 +59,10 @@ impl TaskHandler for PingInbound {
         });
 
         let handle2 = thread::spawn({
-            let grpc_client = self.grpc_client.clone();
-            let metadata = self.metadata.clone();
+            let result_queue = self.result_queue.clone();
             move || {
                 rx.for_each(|packet| {
+                    // Extract payload
                     let mut ping_payload = None;
                     if let PacketPayload::ICMPv4 { value } = packet.payload {
                         let payload = protobuf::parse_from_bytes::<PingPayload>(&value.body);
@@ -73,23 +78,20 @@ impl TaskHandler for PingInbound {
                     }
                     let ping_payload = ping_payload.unwrap();
 
-                    let mut tr = TaskResult::new();
-                    let mut client = Client::new();
-                    client.set_metadata(metadata.clone());
-                    tr.set_client(client);
                     let mut result = Result::new();
                     let mut pr = PingResult::new();
 
-                    let task_id = ping_payload.get_task_id();
                     pr.set_payload(ping_payload);
                     pr.set_source_address(packet.source_address.into());
                     pr.set_destination_address(packet.destination_address.into());
                     result.set_ping(pr);
-                    tr.mut_result_list().push(result);
-                    tr.set_task_id(task_id);
 
-                    if let Err(e) = grpc_client.send_result(&tr) {
-                        error!("failed to send result to server: {}", e);
+                    // Put result in transmission queue
+                    {
+                        let mut rq_opt = result_queue.lock().unwrap();
+                        if let Some(ref mut x) = *rq_opt {
+                            x.push(result);
+                        }
                     }
 
                     futures::future::ok(())
@@ -99,12 +101,69 @@ impl TaskHandler for PingInbound {
                 .unwrap();
             }
         });
+
+
+        let handle3 = thread::spawn({
+            let grpc_client = self.grpc_client.clone();
+            let result_queue = self.result_queue.clone();
+            let poison_tx = self.poison_tx.take().unwrap();
+            let metadata = self.metadata.clone();
+            move || {
+                loop {
+                    thread::sleep(Duration::from_secs(5));
+
+                    // Check if this thread is still supposed to be running
+                    if poison_tx.is_canceled() {
+                        break
+                    }
+
+                    // Get the current result queue, and replace it with an empty one
+                    let mut rq;
+                    {
+                        let mut result_queue = result_queue.lock().unwrap();
+                        rq = result_queue.replace(Vec::new()).unwrap();
+                    }
+
+                    // Sort the result queue by task id
+                    let mut rq_ping = rq.drain_filter(|x| x.has_ping()).collect::<Vec<Result>>();
+                    rq_ping.sort_by_key(|x| x.get_ping().get_payload().get_task_id());
+
+                    // Transmit the results, grouped by task id
+                    let mut tr = TaskResult::new();
+                    tr.set_task_id(u32::MAX);
+                    for result in rq_ping {
+                        let result_taskid = result.get_ping().get_payload().get_task_id();
+                        if tr.get_task_id() != result_taskid {
+                            // If the current 'result container' has some results, send it
+                            if tr.get_result_list().len() > 0 {
+                                if let Err(e) = grpc_client.send_result(&tr) {
+                                    error!("failed to send result to server: {}", e);
+                                }
+                            }
+                            tr = TaskResult::new();
+                            tr.set_task_id(result_taskid);
+                            let mut client = Client::new();
+                            client.set_metadata(metadata.clone());
+                            tr.set_client(client);
+                        }
+                        tr.mut_result_list().push(result);
+                    }
+                    if tr.get_result_list().len() > 0 {
+                        if let Err(e) = grpc_client.send_result(&tr) {
+                            error!("failed to send result to server: {}", e);
+                        }
+                    }
+                }
+            }
+        });
         self.handles.push(handle);
         self.handles.push(handle2);
+        self.handles.push(handle3);
     }
 
     fn exit(&mut self) {
         self.socket.shutdown(Shutdown::Both).unwrap_err();
+        self.poison_rx.close();
         for handle in self.handles.drain(..) {
             handle.join().unwrap();
         }
@@ -119,12 +178,16 @@ impl PingInbound {
     pub fn new(metadata: Metadata, grpc_client: Arc<VerfploeterClient>) -> PingInbound {
         let socket =
             Arc::new(Socket::new(Domain::ipv4(), Type::raw(), Some(Protocol::icmpv4())).unwrap());
+        let (poison_tx, poison_rx): (oneshot::Sender<()>, oneshot::Receiver<()>) = oneshot::channel();
 
         PingInbound {
             handles: Vec::new(),
             socket,
             grpc_client,
             metadata,
+            result_queue: Arc::new(Mutex::new(Some(Vec::new()))),
+            poison_tx: Some(poison_tx),
+            poison_rx
         }
     }
 }

@@ -32,7 +32,10 @@ impl fmt::Display for TaskResult {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let task_id = self.get_task_id();
         let client_id = self.get_client().get_metadata().get_hostname();
-        for result in self.get_result_list() {
+        for (idx, result) in self.get_result_list().iter().enumerate() {
+            if idx != 0 {
+                write!(f, "\n").unwrap();
+            }
             if result.has_ping() {
                 let ping = result.get_ping();
                 write!(
@@ -47,7 +50,7 @@ impl fmt::Display for TaskResult {
                 )
                 .unwrap();
             } else {
-                write!(f, "{}|{}|unsupported-result", task_id, client_id).unwrap();
+                write!(f, "{}|{}|unsupported-result\n", task_id, client_id).unwrap();
             }
         }
         Ok(())
