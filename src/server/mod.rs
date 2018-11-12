@@ -6,6 +6,7 @@ use futures::sync::mpsc::{channel, Sender};
 use futures::*;
 use grpcio::{
     Environment, RpcContext, Server as GrpcServer, ServerBuilder, ServerStreamingSink, UnarySink,
+    ChannelBuilder
 };
 use protobuf::RepeatedField;
 use std::collections::HashMap;
@@ -35,7 +36,14 @@ impl Server {
             current_task_id: Arc::new(Mutex::new(0)),
         };
         let service = verfploeter_grpc::create_verfploeter(s);
+
+        let channel_args = ChannelBuilder::new(Arc::clone(&env))
+            .max_receive_message_len(100*1024*1024)
+            .max_send_message_len(100*1024*1024)
+            .build_args();
+
         let grpc_server = ServerBuilder::new(env)
+            .channel_args(channel_args)
             .register_service(service)
             .bind("0.0.0.0", 50001)
             .build()

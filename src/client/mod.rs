@@ -28,6 +28,8 @@ impl Client {
         let channel = ChannelBuilder::new(env)
             .keepalive_time(Duration::from_secs(5))
             .keepalive_timeout(Duration::from_secs(5))
+            .max_send_message_len(100*1024*1024)
+            .max_receive_message_len(100*1024*1024)
             .connect(host);
         let grpc_client = Arc::new(VerfploeterClient::new(channel));
 
@@ -79,7 +81,11 @@ impl Client {
                         futures::future::ok(())
                     }
                 })
-                .map_err(|_| finish_tx.send(()).unwrap());
+                .map_err(|e| {
+                    debug!("{}", e);
+                    finish_tx.send(()).unwrap();
+                }
+                );
 
             self.grpc_client.spawn(f);
 

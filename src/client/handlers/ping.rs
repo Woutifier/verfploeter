@@ -211,7 +211,7 @@ impl TaskHandler for PingOutbound {
                         PingOutbound::perform_ping(&i);
                         futures::future::ok(())
                     })
-                    .map_err(|_| ());
+                    .map_err(|e| error!(""));
                 let poison = shutdown_rx.map_err(|_| ());
                 handler.select(poison).map_err(|_| ()).wait().unwrap();
             }
