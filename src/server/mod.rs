@@ -9,12 +9,10 @@ use grpcio::{
 };
 use protobuf::RepeatedField;
 use std::collections::HashMap;
-use std::net::IpAddr;
-use std::ops::Add;
 use std::ops::AddAssign;
 use std::sync::{Arc, Mutex, RwLock};
 use std::thread;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 pub struct Server {
     pub connection_list: ConnectionList,
@@ -152,10 +150,10 @@ impl Verfploeter for VerfploeterService {
                 let mut t = Task::new();
 
                 // obtain task id
-                let mut task_id: u32 = 0;
+                let task_id: u32;
                 {
                     let mut current_task_id = self.current_task_id.lock().unwrap();
-                    task_id = current_task_id.clone();
+                    task_id = *current_task_id;
                     current_task_id.add_assign(1);
                 }
                 ack.set_task_id(task_id);
@@ -163,7 +161,7 @@ impl Verfploeter for VerfploeterService {
                 t.set_task_id(task_id);
                 t.set_ping(req.take_ping());
 
-                if let Ok(_) = tx.send(t).wait() {
+                if tx.send(t).wait().is_ok() {
                     ack.set_success(true);
                 } else {
                     ack.set_error_message("client exists, but was unable to send task".to_string());
@@ -245,7 +243,7 @@ impl ConnectionManager {
     fn generate_connection_id(&self) -> u32 {
         let mut counter = self.connection_id.lock().unwrap();
         counter.add_assign(1);
-        counter.clone()
+        *counter
     }
 
     fn register_connection(&self, connection_id: u32, connection: Connection) {

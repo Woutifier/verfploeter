@@ -6,8 +6,8 @@ extern crate env_logger;
 extern crate futures;
 extern crate grpcio;
 extern crate protobuf;
-extern crate socket2;
 extern crate ratelimit_meter;
+extern crate socket2;
 
 mod cli;
 mod client;

@@ -60,10 +60,7 @@ impl Client {
                 .unwrap()
                 .get_channel()
             {
-                ChannelType::Task {
-                    sender,
-                    receiver: _,
-                } => sender.unwrap(),
+                ChannelType::Task { sender, .. } => sender.unwrap(),
                 _ => panic!("ping_outbound has wrong tx channel type"),
             };
 
@@ -79,7 +76,7 @@ impl Client {
                         if i.has_ping() {
                             tx.clone().send(i).wait().unwrap();
                         }
-                        return futures::future::ok(());
+                        futures::future::ok(())
                     }
                 })
                 .map_err(|_| finish_tx.send(()).unwrap());

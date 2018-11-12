@@ -14,14 +14,12 @@ use futures::sync::oneshot;
 use futures::Future;
 use futures::Sink;
 use futures::Stream;
-use protobuf::Message;
 use protobuf;
+use protobuf::Message;
+use ratelimit_meter::{DirectRateLimiter, LeakyBucket};
 use std::net::{Ipv4Addr, Shutdown, SocketAddr};
-use ratelimit_meter::{LeakyBucket, DirectRateLimiter};
-use ratelimit_meter::algorithms::TooEarly;
 use std::num::NonZeroU32;
-use std::time::Instant;
-use ratelimit_meter::NonConformance;
+use std::time::Duration;
 
 pub struct PingInbound {
     handles: Vec<JoinHandle<()>>,
@@ -47,7 +45,10 @@ impl TaskHandler for PingInbound {
                     let packet = IPv4Packet::from(&buffer[..result]);
                     debug!("packet: {:?}", &packet);
 
-                    tx.clone().send(packet).wait().expect("unable to send packet to tx channel");
+                    tx.clone()
+                        .send(packet)
+                        .wait()
+                        .expect("unable to send packet to tx channel");
                 }
             }
         });
@@ -58,7 +59,7 @@ impl TaskHandler for PingInbound {
             move || {
                 rx.for_each(|packet| {
                     let mut ping_payload = None;
-                    if let PacketPayload::ICMPv4 {value} = packet.payload {
+                    if let PacketPayload::ICMPv4 { value } = packet.payload {
                         let payload = protobuf::parse_from_bytes::<PingPayload>(&value.body);
                         if let Ok(payload) = payload {
                             ping_payload = Some(payload);
@@ -91,10 +92,11 @@ impl TaskHandler for PingInbound {
                         error!("failed to send result to server: {}", e);
                     }
 
-                    return futures::future::ok(());
+                    futures::future::ok(())
                 })
                 .map_err(|_| ())
-                .wait();
+                .wait()
+                .unwrap();
             }
         });
         self.handles.push(handle);
@@ -102,7 +104,7 @@ impl TaskHandler for PingInbound {
     }
 
     fn exit(&mut self) {
-        self.socket.shutdown(Shutdown::Both);
+        self.socket.shutdown(Shutdown::Both).unwrap_err();
         for handle in self.handles.drain(..) {
             handle.join().unwrap();
         }
@@ -144,11 +146,11 @@ impl TaskHandler for PingOutbound {
                 let handler = rx
                     .for_each(|i| {
                         PingOutbound::perform_ping(&i);
-                        return futures::future::ok(());
+                        futures::future::ok(())
                     })
                     .map_err(|_| ());
                 let poison = shutdown_rx.map_err(|_| ());
-                handler.select(poison).wait();
+                handler.select(poison).map_err(|_| ()).wait().unwrap();
             }
         });
         self.handle = Some(handle);
@@ -216,8 +218,8 @@ impl PingOutbound {
             let icmp = ICMP4Packet::echo_request(1, 2, payload.write_to_bytes().unwrap());
 
             // Rate limiting
-            while let Err(v) = lb.check() {
-                thread::sleep_ms(1);
+            while let Err(_) = lb.check() {
+                thread::sleep(Duration::from_millis(1));
                 //thread::sleep(v.wait_time_from(Instant::now()));
             }
 

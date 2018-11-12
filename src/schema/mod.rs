@@ -44,9 +44,10 @@ impl fmt::Display for TaskResult {
                     IpAddr::from(ping.get_destination_address()),
                     IpAddr::from(ping.get_payload().get_source_address()),
                     IpAddr::from(ping.get_payload().get_destination_address()),
-                );
+                )
+                .unwrap();
             } else {
-                write!(f, "{}|{}|unsupported-result", task_id, client_id);
+                write!(f, "{}|{}|unsupported-result", task_id, client_id).unwrap();
             }
         }
         Ok(())
