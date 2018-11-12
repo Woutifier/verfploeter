@@ -17,6 +17,11 @@ use futures::Stream;
 use protobuf::Message;
 use protobuf;
 use std::net::{Ipv4Addr, Shutdown, SocketAddr};
+use ratelimit_meter::{LeakyBucket, DirectRateLimiter};
+use ratelimit_meter::algorithms::TooEarly;
+use std::num::NonZeroU32;
+use std::time::Instant;
+use ratelimit_meter::NonConformance;
 
 pub struct PingInbound {
     handles: Vec<JoinHandle<()>>,
@@ -41,7 +46,7 @@ impl TaskHandler for PingInbound {
 
                     let packet = IPv4Packet::from(&buffer[..result]);
                     debug!("packet: {:?}", &packet);
-                    //tx.clone().send(packet)
+
                     tx.clone().send(packet).wait().expect("unable to send packet to tx channel");
                 }
             }
@@ -112,9 +117,6 @@ impl PingInbound {
     pub fn new(metadata: Metadata, grpc_client: Arc<VerfploeterClient>) -> PingInbound {
         let socket =
             Arc::new(Socket::new(Domain::ipv4(), Type::raw(), Some(Protocol::icmpv4())).unwrap());
-        /*socket
-            .bind(&"0.0.0.0:0".parse::<SocketAddr>().unwrap().into())
-            .unwrap();*/
 
         PingInbound {
             handles: Vec::new(),
@@ -202,6 +204,7 @@ impl PingOutbound {
             )
             .unwrap();
 
+        let mut lb = DirectRateLimiter::<LeakyBucket>::per_second(NonZeroU32::new(10000).unwrap());
         for ip in task.get_ping().get_destination_addresses() {
             // Create payload that will be transmitted inside the ICMP echo request
             let mut payload = PingPayload::new();
@@ -211,6 +214,12 @@ impl PingOutbound {
 
             let bindaddress = format!("{}:0", Ipv4Addr::from(ip.get_v4()).to_string());
             let icmp = ICMP4Packet::echo_request(1, 2, payload.write_to_bytes().unwrap());
+
+            // Rate limiting
+            if let Err(v) = lb.check() {
+                thread::sleep(v.wait_time_from(Instant::now()));
+            }
+
             socket
                 .send_to(
                     &icmp,

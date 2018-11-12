@@ -9,9 +9,13 @@ service Verfploeter {
 }
 
 message Empty {}
+
 message Ack {
     uint32 task_id = 1;
+    bool success = 2;
+    string error_message = 3;
 }
+
 message TaskId { uint32 task_id = 1; }
 
 message ScheduleTask {

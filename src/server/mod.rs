@@ -124,7 +124,8 @@ impl Verfploeter for VerfploeterService {
             });
 
         // Send periodic keepalives
-        // todo: afaik the underlying connection knows when it dies, even without this, but as of now it only notices this when we try to send something
+        // todo: afaik the underlying connection knows when it dies, even without this,
+        // but as of now it only notices this when we try to send something
         thread::spawn(move || loop {
             thread::sleep(Duration::from_secs(5));
             let mut t = Task::new();
@@ -140,28 +141,36 @@ impl Verfploeter for VerfploeterService {
     fn do_task(&mut self, ctx: RpcContext, mut req: ScheduleTask, sink: UnarySink<Ack>) {
         debug!("received do_task request");
         let mut ack = Ack::new();
+        ack.set_success(false);
 
         // Handle a ping task
         if req.has_ping() {
             let tx = self
                 .connection_manager
-                .get_client_tx(req.get_client().index)
-                .unwrap();
-            let mut t = Task::new();
+                .get_client_tx(req.get_client().index);
+            if let Some(tx) = tx {
+                let mut t = Task::new();
 
-            // obtain task id
-            let mut task_id: u32 = 0;
-            {
-                let mut current_task_id = self.current_task_id.lock().unwrap();
-                task_id = current_task_id.clone();
-                current_task_id.add_assign(1);
+                // obtain task id
+                let mut task_id: u32 = 0;
+                {
+                    let mut current_task_id = self.current_task_id.lock().unwrap();
+                    task_id = current_task_id.clone();
+                    current_task_id.add_assign(1);
+                }
+                ack.set_task_id(task_id);
+
+                t.set_task_id(task_id);
+                t.set_ping(req.take_ping());
+
+                if let Ok(_) = tx.send(t).wait() {
+                    ack.set_success(true);
+                } else {
+                    ack.set_error_message("client exists, but was unable to send task".to_string());
+                }
+            } else {
+                ack.set_error_message("client does not exist".to_string());
             }
-            ack.set_task_id(task_id);
-
-            t.set_task_id(task_id);
-            t.set_ping(req.take_ping());
-
-            tx.send(t).wait().unwrap();
         }
 
         let f = sink.success(ack).map_err(|_| ());

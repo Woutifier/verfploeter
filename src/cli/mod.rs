@@ -28,7 +28,7 @@ pub fn execute(args: &ArgMatches) {
                     println!("{}\t\t\t{}", client.index, client.get_metadata().hostname);
                 }
             }
-            Err(e) => error!("unable to obtain client list: {}", e),
+            Err(e) => println!("unable to obtain client list: {}", e),
         }
     } else if let Some(matches) = args.subcommand_matches("do-verfploeter") {
         // Get parameters
@@ -64,13 +64,23 @@ pub fn execute(args: &ArgMatches) {
         schedule_task.set_client(client);
 
         let mut scheduled_task_id = None;
+        let mut error_message = None;
+        let mut success = false;
+
         // Send task to server
         match grpc_client.do_task(&schedule_task) {
-            Ok(ack) => { println!("successfully scheduled task, id: {}", ack.get_task_id()); scheduled_task_id = Some(ack.get_task_id()); }
-            Err(e) => error!("unable to schedule task: {} ({})", e.description(), e),
+            Ok(ack) => {
+                println!("successfully connected, id: {}", ack.get_task_id());
+                success = ack.get_success();
+                scheduled_task_id = Some(ack.get_task_id());
+                if !ack.get_success() {
+                    error_message = Some(ack.get_error_message().to_string());
+                }
+            }
+            Err(e) => println!("unable to connect: {} ({})", e.description(), e),
         }
 
-        if scheduled_task_id.is_some() {
+        if success {
             let mut request_task_id = TaskId::new();
             request_task_id.set_task_id(scheduled_task_id.unwrap());
             let result = grpc_client.subscribe_result(&request_task_id).unwrap();
@@ -79,6 +89,9 @@ pub fn execute(args: &ArgMatches) {
                 .map_err(|_| ())
                 .wait()
                 .for_each(drop);
+        } else {
+            println!("failed to schedule task");
+            println!("Message: {}", error_message.unwrap());
         }
     } else {
         unimplemented!();

@@ -7,6 +7,7 @@ extern crate futures;
 extern crate grpcio;
 extern crate protobuf;
 extern crate socket2;
+extern crate ratelimit_meter;
 
 mod cli;
 mod client;
