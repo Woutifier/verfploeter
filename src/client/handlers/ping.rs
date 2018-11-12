@@ -216,8 +216,9 @@ impl PingOutbound {
             let icmp = ICMP4Packet::echo_request(1, 2, payload.write_to_bytes().unwrap());
 
             // Rate limiting
-            if let Err(v) = lb.check() {
-                thread::sleep(v.wait_time_from(Instant::now()));
+            while let Err(v) = lb.check() {
+                thread::sleep_ms(1);
+                //thread::sleep(v.wait_time_from(Instant::now()));
             }
 
             socket
