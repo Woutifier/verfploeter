@@ -26,8 +26,8 @@ impl Client {
         let host = args.value_of("server").unwrap();
         let env = Arc::new(Environment::new(1));
         let channel = ChannelBuilder::new(env)
-            .keepalive_time(Duration::from_secs(5))
-            .keepalive_timeout(Duration::from_secs(5))
+            .keepalive_time(Duration::from_secs(180))
+            .keepalive_timeout(Duration::from_secs(180))
             .max_send_message_len(100*1024*1024)
             .max_receive_message_len(100*1024*1024)
             .connect(host);
