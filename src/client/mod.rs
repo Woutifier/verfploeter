@@ -76,7 +76,11 @@ impl Client {
                     let tx = tx.clone();
                     move |i| {
                         if i.has_ping() {
+                            debug!("got ping task");
                             tx.clone().send(i).wait().unwrap();
+                            debug!("sent to handler");
+                        } else {
+                            debug!("got keepalive");
                         }
                         futures::future::ok(())
                     }
