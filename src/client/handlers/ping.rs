@@ -41,15 +41,11 @@ impl TaskHandler for PingInbound {
             move || {
                 let mut buffer: Vec<u8> = vec![0; 1500];
                 while let Ok(result) = socket.recv(&mut buffer) {
-                    debug!("packet length received: {}", result);
-
                     if result == 0 {
                         break;
                     }
 
                     let packet = IPv4Packet::from(&buffer[..result]);
-                    debug!("packet: {:?}", &packet);
-
                     tx.clone()
                         .send(packet)
                         .wait()
