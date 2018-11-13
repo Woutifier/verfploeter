@@ -169,11 +169,13 @@ impl Verfploeter for VerfploeterService {
                 t.set_task_id(task_id);
                 t.set_ping(req.take_ping());
 
+                debug!("sending task to client");
                 if tx.send(t).wait().is_ok() {
                     ack.set_success(true);
                 } else {
                     ack.set_error_message("client exists, but was unable to send task".to_string());
                 }
+                debug!("task sent");
             } else {
                 ack.set_error_message("client does not exist".to_string());
             }
@@ -213,9 +215,6 @@ impl Verfploeter for VerfploeterService {
                 .map(|s| s.clone().send(req.clone()).wait())
                 .for_each(drop);
         }
-
-        debug!("{}", req);
-
         ctx.spawn(sink.success(Ack::new()).map_err(|_| ()));
     }
 
