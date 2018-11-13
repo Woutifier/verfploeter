@@ -9,6 +9,7 @@ extern crate grpcio;
 extern crate protobuf;
 extern crate ratelimit_meter;
 extern crate socket2;
+extern crate tokio;
 
 mod cli;
 mod client;

@@ -5,8 +5,8 @@ use super::schema::verfploeter_grpc::{self, Verfploeter};
 use futures::sync::mpsc::{channel, Sender};
 use futures::*;
 use grpcio::{
-    Environment, RpcContext, Server as GrpcServer, ServerBuilder, ServerStreamingSink, UnarySink,
-    ChannelBuilder
+    ChannelBuilder, Environment, RpcContext, Server as GrpcServer, ServerBuilder,
+    ServerStreamingSink, UnarySink,
 };
 use protobuf::RepeatedField;
 use std::collections::HashMap;
@@ -14,6 +14,8 @@ use std::ops::AddAssign;
 use std::sync::{Arc, Mutex, RwLock};
 use std::thread;
 use std::time::Duration;
+use tokio::runtime::Runtime;
+use tokio::timer::Interval;
 
 pub struct Server {
     pub connection_list: ConnectionList,
@@ -34,12 +36,13 @@ impl Server {
             connection_manager,
             subscription_list: Arc::new(RwLock::new(HashMap::new())),
             current_task_id: Arc::new(Mutex::new(0)),
+            runtime: Arc::new(Runtime::new().unwrap()),
         };
         let service = verfploeter_grpc::create_verfploeter(s);
 
         let channel_args = ChannelBuilder::new(Arc::clone(&env))
-            .max_receive_message_len(100*1024*1024)
-            .max_send_message_len(100*1024*1024)
+            .max_receive_message_len(100 * 1024 * 1024)
+            .max_send_message_len(100 * 1024 * 1024)
             .build_args();
 
         let grpc_server = ServerBuilder::new(env)
@@ -74,6 +77,7 @@ struct VerfploeterService {
     connection_manager: Arc<ConnectionManager>,
     subscription_list: Arc<RwLock<HashMap<u32, Vec<Sender<TaskResult>>>>>,
     current_task_id: Arc<Mutex<u32>>, // todo: replace this with AtomicU32 when it stabilizes
+    runtime: Arc<Runtime>,
 }
 
 impl VerfploeterService {
@@ -107,6 +111,7 @@ impl Verfploeter for VerfploeterService {
 
         let connection_manager = self.connection_manager.clone();
         let connection_id = connection_manager.generate_connection_id();
+        let hostname = metadata.get_hostname().to_string();
         connection_manager.register_connection(
             connection_id,
             Connection {
@@ -119,29 +124,41 @@ impl Verfploeter for VerfploeterService {
         // manager on error or completion.
         let f = rx
             .map(|item| (item, grpcio::WriteFlags::default()))
-            .forward(sink.sink_map_err(|_| ()))
+            .forward(sink.sink_map_err({
+                let hostname = hostname.clone();
+                move |e| {
+                    debug!("exiting task forwarder ({}), with error {}", hostname, e);
+                }
+            }))
             .map({
                 let cm = self.connection_manager.clone();
-                move |_| cm.unregister_connection(connection_id)
+                let hostname = hostname.clone();
+                move |_| {
+                    cm.unregister_connection(connection_id);
+                    debug!("exiting task forwarder ({})", hostname);
+                }
             })
             .map_err({
                 let cm = self.connection_manager.clone();
-                move |_| cm.unregister_connection(connection_id)
+                let hostname = hostname.clone();
+                move |_| {
+                    cm.unregister_connection(connection_id);
+                    debug!("exiting task forwarder ({}), with error", hostname);
+                }
             });
+        self.runtime.executor().spawn(f);
 
-        // Send periodic keepalives
-        // todo: afaik the underlying connection knows when it dies, even without this,
-        // but as of now it only notices this when we try to send something
-        thread::spawn(move || loop {
-            thread::sleep(Duration::from_secs(5));
-            let mut t = Task::new();
-            t.set_empty(Empty::new());
-            if tx.clone().send(t).wait().is_err() {
-                break;
-            }
-        });
-
-        ctx.spawn(f);
+        // Send keepalives
+        self.runtime.executor().spawn(
+          Interval::new_interval(Duration::from_secs(5))
+              .map_err(|_| ())
+              .map(|_| {
+                  let mut t = Task::new();
+                  t.set_empty(Empty::new());
+                  return t;
+              }).forward(tx.clone().sink_map_err(|_| ()))
+              .map_err(|_| ()).map(|_| ())
+        );
     }
 
     fn do_task(&mut self, ctx: RpcContext, mut req: ScheduleTask, sink: UnarySink<Ack>) {
@@ -187,6 +204,7 @@ impl Verfploeter for VerfploeterService {
 
     fn list_clients(&mut self, ctx: RpcContext, _: Empty, sink: UnarySink<ClientList>) {
         debug!("received list_clients request");
+
         let connections = self.connection_manager.connections.lock().unwrap();
         let mut list = ClientList::new();
         list.set_clients(RepeatedField::from_vec(
@@ -234,7 +252,7 @@ impl Verfploeter for VerfploeterService {
 
         self.register_subscriber(req.get_task_id(), tx);
 
-        ctx.spawn(f);
+        self.runtime.executor().spawn(f);
     }
 }
 

@@ -19,8 +19,8 @@ use protobuf::Message;
 use ratelimit_meter::{DirectRateLimiter, LeakyBucket};
 use std::net::{Ipv4Addr, Shutdown, SocketAddr};
 use std::num::NonZeroU32;
-use std::time::Duration;
 use std::sync::Mutex;
+use std::time::Duration;
 use std::u32;
 
 pub struct PingInbound {
@@ -30,7 +30,7 @@ pub struct PingInbound {
     metadata: Metadata,
     result_queue: Arc<Mutex<Option<Vec<Result>>>>,
     poison_rx: oneshot::Receiver<()>,
-    poison_tx: Option<oneshot::Sender<()>>
+    poison_tx: Option<oneshot::Sender<()>>,
 }
 
 impl TaskHandler for PingInbound {
@@ -98,7 +98,6 @@ impl TaskHandler for PingInbound {
             }
         });
 
-
         let handle3 = thread::spawn({
             let grpc_client = self.grpc_client.clone();
             let result_queue = self.result_queue.clone();
@@ -110,7 +109,7 @@ impl TaskHandler for PingInbound {
 
                     // Check if this thread is still supposed to be running
                     if poison_tx.is_canceled() {
-                        break
+                        break;
                     }
 
                     // Get the current result queue, and replace it with an empty one
@@ -174,7 +173,8 @@ impl PingInbound {
     pub fn new(metadata: Metadata, grpc_client: Arc<VerfploeterClient>) -> PingInbound {
         let socket =
             Arc::new(Socket::new(Domain::ipv4(), Type::raw(), Some(Protocol::icmpv4())).unwrap());
-        let (poison_tx, poison_rx): (oneshot::Sender<()>, oneshot::Receiver<()>) = oneshot::channel();
+        let (poison_tx, poison_rx): (oneshot::Sender<()>, oneshot::Receiver<()>) =
+            oneshot::channel();
 
         PingInbound {
             handles: Vec::new(),
@@ -183,7 +183,7 @@ impl PingInbound {
             metadata,
             result_queue: Arc::new(Mutex::new(Some(Vec::new()))),
             poison_tx: Some(poison_tx),
-            poison_rx
+            poison_rx,
         }
     }
 }
@@ -207,7 +207,7 @@ impl TaskHandler for PingOutbound {
                         PingOutbound::perform_ping(&i);
                         futures::future::ok(())
                     })
-                    .map_err(|e| error!(""));
+                    .map_err(|_| error!("exiting outbound thread"));
                 let poison = shutdown_rx.map_err(|_| ());
                 handler.select(poison).map_err(|_| ()).wait().unwrap();
             }
