@@ -66,6 +66,21 @@ impl fmt::Display for TaskResult {
     }
 }
 
+#[derive(Debug, Clone)]
+struct LengthError;
+
+impl Error for LengthError {
+    fn description(&self) -> &str {
+        "Invalid length of payload (need at least 32 bytes for the signature)"
+    }
+}
+
+impl fmt::Display for LengthError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Invalid length of payload (need at least 32 bytes for the signature)")
+    }
+}
+
 pub trait Signable<T> {
     fn to_signed_bytes(&self, secret: &str) -> Result<Vec<u8>, Box<Error>>;
     fn from_signed_bytes(secret: &str, buffer: &[u8]) -> Result<T, Box<Error>>;
@@ -88,9 +103,13 @@ impl Signable<PingPayload> for PingPayload {
     }
 
     fn from_signed_bytes(secret: &str, buffer: &[u8]) -> Result<PingPayload, Box<Error>> {
+        // Check length of buffer, must be at least 32 bytes to have a proper signature
+        if buffer.len() < 32 {
+            return Err(LengthError {}.into());
+        }
+
         // Create HMAC-SHA256 instance which implements `Mac` trait
         let mut mac = HmacSha256::new_varkey(secret.as_ref())?;
-
         let signature = &buffer[buffer.len()-32..];
         let value = &buffer[..buffer.len()-32];
 
@@ -146,5 +165,11 @@ mod signable_pingpayload {
         let pp2 = PingPayload::from_signed_bytes("abc123", &pp_bytes_signed);
 
         assert!(pp2.is_err(), "payload should not pass validation with incorrect payload");
+    }
+
+    #[test]
+    fn does_not_validate_with_too_few_bytes_in_payload() {
+        let pp2 = PingPayload::from_signed_bytes("abc123", &vec![0, 1, 2,3]);
+        assert!(pp2.is_err(), "payload should not pass validation with a payload that is too short");
     }
 }
