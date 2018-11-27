@@ -3,6 +3,7 @@ use crate::net::{ICMP4Packet, IPv4Packet, PacketPayload};
 use crate::schema::verfploeter::{
     Client, Metadata, PingPayload, PingResult, Result, Task, TaskResult,
 };
+use crate::schema::Signable;
 use crate::schema::verfploeter_grpc::VerfploeterClient;
 use socket2::{Domain, Protocol, Socket, Type};
 use std::sync::Arc;
@@ -14,8 +15,6 @@ use futures::sync::oneshot;
 use futures::Future;
 use futures::Sink;
 use futures::Stream;
-use protobuf;
-use protobuf::Message;
 use ratelimit_meter::{DirectRateLimiter, LeakyBucket};
 use std::net::{Ipv4Addr, Shutdown, SocketAddr};
 use std::num::NonZeroU32;
@@ -61,7 +60,8 @@ impl TaskHandler for PingInbound {
                     // Extract payload
                     let mut ping_payload = None;
                     if let PacketPayload::ICMPv4 { value } = packet.payload {
-                        let payload = protobuf::parse_from_bytes::<PingPayload>(&value.body);
+                        // Todo: make the secret configurable
+                        let payload = PingPayload::from_signed_bytes("test-secret",&value.body);
                         if let Ok(payload) = payload {
                             ping_payload = Some(payload);
                         }
@@ -274,7 +274,8 @@ impl PingOutbound {
             payload.set_task_id(task.get_task_id());
 
             let bindaddress = format!("{}:0", Ipv4Addr::from(ip.get_v4()).to_string());
-            let icmp = ICMP4Packet::echo_request(1, 2, payload.write_to_bytes().unwrap());
+            // Todo: make the secret configurable
+            let icmp = ICMP4Packet::echo_request(1, 2, payload.to_signed_bytes("test-secret").unwrap());
 
             // Rate limiting
             while let Err(_) = lb.check() {

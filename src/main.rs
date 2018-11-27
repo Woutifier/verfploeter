@@ -12,6 +12,8 @@ extern crate socket2;
 extern crate tokio;
 #[macro_use]
 extern crate prettytable;
+extern crate hmac;
+extern crate sha2;
 
 mod cli;
 mod client;

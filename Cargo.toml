@@ -1,6 +1,6 @@
 [package]
 name = "verfploeter"
-version = "0.1.15"
+version = "0.1.16"
 authors = ["Wouter de Vries <wouter@wouter-web.nl>"]
 edition = "2018"
 
@@ -16,3 +16,9 @@ byteorder = "1"
 ratelimit_meter = "4.0.1"
 tokio = "0.1.11"
 prettytable-rs = "0.8.0"
+sha2 = "0.8.0"
+hmac = "0.7.0"
+
+[dependencies.crypto-mac]
+version = "0.7"
+features = ["std"]
