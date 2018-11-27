@@ -34,7 +34,7 @@ impl fmt::Display for TaskResult {
         let client_id = self.get_client().get_metadata().get_hostname();
         for (idx, result) in self.get_result_list().iter().enumerate() {
             if idx != 0 {
-                write!(f, "\n").unwrap();
+                writeln!(f).unwrap();
             }
             if result.has_ping() {
                 let ping = result.get_ping();
@@ -50,7 +50,7 @@ impl fmt::Display for TaskResult {
                 )
                 .unwrap();
             } else {
-                write!(f, "{}|{}|unsupported-result\n", task_id, client_id).unwrap();
+                writeln!(f, "{}|{}|unsupported-result", task_id, client_id).unwrap();
             }
         }
         Ok(())

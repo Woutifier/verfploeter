@@ -44,6 +44,7 @@ message Task {
 
 message Metadata {
     string hostname = 1;
+    string version = 2;
 }
 
 message Ping {

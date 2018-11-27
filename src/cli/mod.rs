@@ -11,6 +11,7 @@ use std::io::BufReader;
 use std::net::Ipv4Addr;
 use std::str::FromStr;
 use std::sync::Arc;
+use prettytable::{Table, Row, Cell, Attr, color, format};
 
 pub fn execute(args: &ArgMatches) {
     let server = args.value_of("server").unwrap();
@@ -21,12 +22,24 @@ pub fn execute(args: &ArgMatches) {
     if args.subcommand_matches("client-list").is_some() {
         match grpc_client.list_clients(&Empty::new()) {
             Ok(client_list) => {
-                println!("Connected clients: {}", client_list.get_clients().len());
-                println!("-------------------------------------");
-                println!("Index\t\t\tHostname");
+                let mut table = Table::new();
+                table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
+                table.add_row(Row::new(vec![
+                    Cell::new("Index")
+                        .with_style(Attr::Bold)
+                        .with_style(Attr::ForegroundColor(color::GREEN)),
+                    Cell::new("Hostname")
+                        .with_style(Attr::Bold)
+                        .with_style(Attr::ForegroundColor(color::GREEN)),
+                    Cell::new("Version")
+                    .with_style(Attr::Bold)
+                    .with_style(Attr::ForegroundColor(color::GREEN))
+                ]));
                 for client in client_list.get_clients() {
-                    println!("{}\t\t\t{}", client.index, client.get_metadata().hostname);
+                    table.add_row(row!(client.index, client.get_metadata().hostname, client.get_metadata().version));
                 }
+                table.printstd();
+                println!("Connected clients: {}", client_list.get_clients().len());
             }
             Err(e) => println!("unable to obtain client list: {}", e),
         }

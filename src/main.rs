@@ -10,6 +10,8 @@ extern crate protobuf;
 extern crate ratelimit_meter;
 extern crate socket2;
 extern crate tokio;
+#[macro_use]
+extern crate prettytable;
 
 mod cli;
 mod client;

@@ -1,6 +1,6 @@
 [package]
 name = "verfploeter"
-version = "0.1.14"
+version = "0.1.15"
 authors = ["Wouter de Vries <wouter@wouter-web.nl>"]
 edition = "2018"
 
@@ -15,4 +15,4 @@ socket2 = "0.3.8"
 byteorder = "1"
 ratelimit_meter = "4.0.1"
 tokio = "0.1.11"
-#tokio-threadpool = "0.1.8"
+prettytable-rs = "0.8.0"

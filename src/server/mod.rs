@@ -12,7 +12,6 @@ use protobuf::RepeatedField;
 use std::collections::HashMap;
 use std::ops::AddAssign;
 use std::sync::{Arc, Mutex, RwLock};
-use std::thread;
 use std::time::Duration;
 use tokio::runtime::Runtime;
 use tokio::timer::Interval;
@@ -106,7 +105,7 @@ impl VerfploeterService {
 }
 
 impl Verfploeter for VerfploeterService {
-    fn connect(&mut self, ctx: RpcContext, metadata: Metadata, sink: ServerStreamingSink<Task>) {
+    fn connect(&mut self, _ctx: RpcContext, metadata: Metadata, sink: ServerStreamingSink<Task>) {
         let (tx, rx) = channel(1);
 
         let connection_manager = self.connection_manager.clone();
@@ -155,7 +154,7 @@ impl Verfploeter for VerfploeterService {
               .map(|_| {
                   let mut t = Task::new();
                   t.set_empty(Empty::new());
-                  return t;
+                  t
               }).forward(tx.clone().sink_map_err(|_| ()))
               .map_err(|_| ()).map(|_| ())
         );
@@ -238,7 +237,7 @@ impl Verfploeter for VerfploeterService {
 
     fn subscribe_result(
         &mut self,
-        ctx: RpcContext,
+        _ctx: RpcContext,
         req: TaskId,
         sink: ServerStreamingSink<TaskResult>,
     ) {

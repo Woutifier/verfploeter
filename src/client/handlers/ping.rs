@@ -130,7 +130,7 @@ impl TaskHandler for PingInbound {
                         let result_taskid = result.get_ping().get_payload().get_task_id();
                         if tr.get_task_id() != result_taskid {
                             // If the current 'result container' has some results, send it
-                            if tr.get_result_list().len() > 0 {
+                            if !tr.get_result_list().is_empty() {
                                 if let Err(e) = grpc_client.send_result(&tr) {
                                     error!("failed to send result to server: {}", e);
                                 }
@@ -143,7 +143,7 @@ impl TaskHandler for PingInbound {
                         }
                         tr.mut_result_list().push(result);
                     }
-                    if tr.get_result_list().len() > 0 {
+                    if !tr.get_result_list().is_empty() {
                         if let Err(e) = grpc_client.send_result(&tr) {
                             error!("failed to send result to server: {}", e);
                         }

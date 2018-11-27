@@ -23,6 +23,7 @@ pub struct Client {
 
 impl Client {
     pub fn new(args: &ArgMatches) -> Client {
+        // Setup GRPC client
         let host = args.value_of("server").unwrap();
         let env = Arc::new(Environment::new(1));
         let channel = ChannelBuilder::new(env)
@@ -33,12 +34,13 @@ impl Client {
             .connect(host);
         let grpc_client = Arc::new(VerfploeterClient::new(channel));
 
-        let mut task_handlers: HashMap<String, Box<dyn TaskHandler>> = HashMap::new();
-
+        // Setup metadata
         let mut metadata = Metadata::new();
         metadata.set_hostname(args.value_of("hostname").unwrap().to_string());
+        metadata.set_version(env!("CARGO_PKG_VERSION").to_string());
 
         // Setup task_handlers
+        let mut task_handlers: HashMap<String, Box<dyn TaskHandler>> = HashMap::new();
         task_handlers.insert("ping_outbound".to_string(), Box::new(PingOutbound::new()));
         task_handlers.insert(
             "ping_inbound".to_string(),
