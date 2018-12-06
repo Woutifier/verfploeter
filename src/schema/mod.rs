@@ -1,13 +1,13 @@
 pub mod verfploeter;
 pub mod verfploeter_grpc;
 
-use self::verfploeter::{Address, TaskResult, PingPayload};
+use self::verfploeter::{Address, PingPayload, TaskResult};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
 use std::fmt;
 
-use sha2::Sha256;
 use hmac::{Hmac, Mac};
+use sha2::Sha256;
 
 use protobuf;
 use protobuf::Message;
@@ -77,7 +77,10 @@ impl Error for LengthError {
 
 impl fmt::Display for LengthError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Invalid length of payload (need at least 32 bytes for the signature)")
+        write!(
+            f,
+            "Invalid length of payload (need at least 32 bytes for the signature)"
+        )
     }
 }
 
@@ -87,7 +90,7 @@ pub trait Signable<T> {
 }
 
 impl Signable<PingPayload> for PingPayload {
-    fn to_signed_bytes(&self, secret: &str) -> Result<Vec<u8>, Box<Error>>{
+    fn to_signed_bytes(&self, secret: &str) -> Result<Vec<u8>, Box<Error>> {
         // Create HMAC-SHA256 instance which implements `Mac` trait
         let mut mac = HmacSha256::new_varkey(secret.as_ref())?;
 
@@ -110,8 +113,8 @@ impl Signable<PingPayload> for PingPayload {
 
         // Create HMAC-SHA256 instance which implements `Mac` trait
         let mut mac = HmacSha256::new_varkey(secret.as_ref())?;
-        let signature = &buffer[buffer.len()-32..];
-        let value = &buffer[..buffer.len()-32];
+        let signature = &buffer[buffer.len() - 32..];
+        let value = &buffer[..buffer.len() - 32];
 
         mac.input(value);
         mac.verify(signature)?;
@@ -151,7 +154,10 @@ mod signable_pingpayload {
         let pp_bytes_signed = pp.to_signed_bytes("abc123").unwrap();
         let pp2 = PingPayload::from_signed_bytes("abc124", &pp_bytes_signed);
 
-        assert!(pp2.is_err(), "payload should not pass validation with incorrect secret");
+        assert!(
+            pp2.is_err(),
+            "payload should not pass validation with incorrect secret"
+        );
     }
 
     #[test]
@@ -164,12 +170,18 @@ mod signable_pingpayload {
         pp_bytes_signed[2] = pp_bytes_signed[2] + 1;
         let pp2 = PingPayload::from_signed_bytes("abc123", &pp_bytes_signed);
 
-        assert!(pp2.is_err(), "payload should not pass validation with incorrect payload");
+        assert!(
+            pp2.is_err(),
+            "payload should not pass validation with incorrect payload"
+        );
     }
 
     #[test]
     fn does_not_validate_with_too_few_bytes_in_payload() {
-        let pp2 = PingPayload::from_signed_bytes("abc123", &vec![0, 1, 2,3]);
-        assert!(pp2.is_err(), "payload should not pass validation with a payload that is too short");
+        let pp2 = PingPayload::from_signed_bytes("abc123", &vec![0, 1, 2, 3]);
+        assert!(
+            pp2.is_err(),
+            "payload should not pass validation with a payload that is too short"
+        );
     }
 }

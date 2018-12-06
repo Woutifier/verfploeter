@@ -14,6 +14,10 @@ extern crate tokio;
 extern crate prettytable;
 extern crate hmac;
 extern crate sha2;
+extern crate maxminddb;
+extern crate serde_json;
+#[macro_use]
+extern crate serde_derive;
 
 mod cli;
 mod client;
@@ -28,7 +32,7 @@ use std::time::Duration;
 
 fn main() {
     // Setup logging
-    let env = env_logger::Env::default().filter_or(env_logger::DEFAULT_FILTER_ENV, "debug");
+    let env = env_logger::Env::default().filter_or(env_logger::DEFAULT_FILTER_ENV, "info");
     env_logger::Builder::from_env(env).init();
 
     let matches = parse_cmd();
@@ -101,6 +105,10 @@ fn parse_cmd<'a>() -> ArgMatches<'a> {
                         .short("s")
                         .multiple(false)
                         .help("Stream results to stdout"))
+                    .arg(Arg::with_name("json")
+                        .short("j")
+                        .multiple(false)
+                        .help("Output results in JSON format"))
                 )
         )
         .get_matches()

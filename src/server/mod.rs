@@ -17,7 +17,6 @@ use tokio::runtime::Runtime;
 use tokio::timer::Interval;
 
 pub struct Server {
-    pub connection_list: ConnectionList,
     grpc_server: GrpcServer,
 }
 
@@ -25,12 +24,7 @@ impl Server {
     pub fn new() -> Server {
         let env = Arc::new(Environment::new(10));
 
-        let connections = Arc::new(Mutex::new(HashMap::new()));
-        let connection_manager = Arc::new(ConnectionManager {
-            connections: connections.clone(),
-            connection_id: Arc::new(Mutex::new(0)),
-        });
-
+        let connection_manager = Arc::new(ConnectionManager::new());
         let s = VerfploeterService {
             connection_manager,
             subscription_list: Arc::new(RwLock::new(HashMap::new())),
@@ -51,10 +45,7 @@ impl Server {
             .build()
             .unwrap();
 
-        Server {
-            connection_list: connections,
-            grpc_server,
-        }
+        Server { grpc_server }
     }
     pub fn start(&mut self) {
         self.grpc_server.start();
@@ -149,14 +140,16 @@ impl Verfploeter for VerfploeterService {
 
         // Send keepalives
         self.runtime.executor().spawn(
-          Interval::new_interval(Duration::from_secs(5))
-              .map_err(|_| ())
-              .map(|_| {
-                  let mut t = Task::new();
-                  t.set_empty(Empty::new());
-                  t
-              }).forward(tx.clone().sink_map_err(|_| ()))
-              .map_err(|_| ()).map(|_| ())
+            Interval::new_interval(Duration::from_secs(5))
+                .map_err(|_| ())
+                .map(|_| {
+                    let mut t = Task::new();
+                    t.set_empty(Empty::new());
+                    t
+                })
+                .forward(tx.clone().sink_map_err(|_| ()))
+                .map_err(|_| ())
+                .map(|_| ()),
         );
     }
 
@@ -204,7 +197,7 @@ impl Verfploeter for VerfploeterService {
     fn list_clients(&mut self, ctx: RpcContext, _: Empty, sink: UnarySink<ClientList>) {
         debug!("received list_clients request");
 
-        let connections = self.connection_manager.connections.lock().unwrap();
+        let connections = self.connection_manager.connections.read().unwrap();
         let mut list = ClientList::new();
         list.set_clients(RepeatedField::from_vec(
             connections
@@ -255,7 +248,7 @@ impl Verfploeter for VerfploeterService {
     }
 }
 
-type ConnectionList = Arc<Mutex<HashMap<u32, Connection>>>;
+type ConnectionList = Arc<RwLock<HashMap<u32, Connection>>>;
 
 #[derive(Debug)]
 struct ConnectionManager {
@@ -264,6 +257,13 @@ struct ConnectionManager {
 }
 
 impl ConnectionManager {
+    fn new() -> ConnectionManager {
+        ConnectionManager {
+            connections: Arc::new(RwLock::new(HashMap::new())),
+            connection_id: Arc::new(Mutex::new(0)),
+        }
+    }
+
     fn generate_connection_id(&self) -> u32 {
         let mut counter = self.connection_id.lock().unwrap();
         counter.add_assign(1);
@@ -271,7 +271,7 @@ impl ConnectionManager {
     }
 
     fn register_connection(&self, connection_id: u32, connection: Connection) {
-        let mut hashmap = self.connections.lock().unwrap();
+        let mut hashmap = self.connections.write().unwrap();
         hashmap.insert(connection_id, connection);
         debug!(
             "added connection to list with id {}, connection count: {}",
@@ -281,7 +281,7 @@ impl ConnectionManager {
     }
 
     fn unregister_connection(&self, connection_id: u32) {
-        let mut hashmap = self.connections.lock().unwrap();
+        let mut hashmap = self.connections.write().unwrap();
         hashmap.remove(&connection_id);
         debug!(
             "removed connection from list with id {}, connection count: {}",
@@ -291,10 +291,52 @@ impl ConnectionManager {
     }
 
     fn get_client_tx(&self, connection_id: u32) -> Option<Sender<Task>> {
-        let hashmap = self.connections.lock().unwrap();
+        let hashmap = self.connections.read().unwrap();
         if let Some(v) = hashmap.get(&connection_id) {
             return Some(v.channel.clone());
         }
         None
+    }
+}
+
+#[cfg(test)]
+mod connection_manager {
+    use super::*;
+
+    #[test]
+    fn ids_increase() {
+        let manager = ConnectionManager::new();
+        let mut prev_id = None;
+        for _ in 0..100 {
+            let new_id = manager.generate_connection_id();
+            if prev_id.is_some() {
+                assert_eq!(prev_id.unwrap() + 1, new_id);
+            }
+            prev_id = Some(new_id);
+        }
+    }
+
+    #[test]
+    fn connections_can_be_registered() {
+        let manager = ConnectionManager::new();
+
+        let mut registered_ids = Vec::new();
+        for _ in 0..5 {
+            let connection_id = manager.generate_connection_id();
+            let (channel_tx, _) = channel(0);
+            let connection = Connection {
+                channel: channel_tx,
+                metadata: Metadata::default(),
+            };
+            manager.register_connection(connection_id, connection);
+            registered_ids.push(connection_id);
+        }
+
+        for id in registered_ids {
+            assert!(
+                manager.get_client_tx(id).is_some(),
+                "registered connection should be retrievable from connection manager"
+            );
+        }
     }
 }

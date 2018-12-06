@@ -3,8 +3,8 @@ use crate::net::{ICMP4Packet, IPv4Packet, PacketPayload};
 use crate::schema::verfploeter::{
     Client, Metadata, PingPayload, PingResult, Result, Task, TaskResult,
 };
-use crate::schema::Signable;
 use crate::schema::verfploeter_grpc::VerfploeterClient;
+use crate::schema::Signable;
 use socket2::{Domain, Protocol, Socket, Type};
 use std::sync::Arc;
 use std::thread;
@@ -61,7 +61,7 @@ impl TaskHandler for PingInbound {
                     let mut ping_payload = None;
                     if let PacketPayload::ICMPv4 { value } = packet.payload {
                         // Todo: make the secret configurable
-                        let payload = PingPayload::from_signed_bytes("test-secret",&value.body);
+                        let payload = PingPayload::from_signed_bytes("test-secret", &value.body);
                         if let Ok(payload) = payload {
                             ping_payload = Some(payload);
                         }
@@ -275,7 +275,8 @@ impl PingOutbound {
 
             let bindaddress = format!("{}:0", Ipv4Addr::from(ip.get_v4()).to_string());
             // Todo: make the secret configurable
-            let icmp = ICMP4Packet::echo_request(1, 2, payload.to_signed_bytes("test-secret").unwrap());
+            let icmp =
+                ICMP4Packet::echo_request(1, 2, payload.to_signed_bytes("test-secret").unwrap());
 
             // Rate limiting
             while let Err(_) = lb.check() {

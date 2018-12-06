@@ -1,8 +1,9 @@
-use super::schema::verfploeter::{Address, Client, Empty, Ping, ScheduleTask, TaskId};
+use super::schema::verfploeter::{Address, Client, Empty, Ping, ScheduleTask, TaskId, TaskResult};
 use super::schema::verfploeter_grpc::VerfploeterClient;
 use clap::ArgMatches;
 use futures::Stream;
 use grpcio::{ChannelBuilder, Environment};
+use prettytable::{color, format, Attr, Cell, Row, Table};
 use protobuf::RepeatedField;
 use std::error::Error;
 use std::fs::File;
@@ -11,7 +12,9 @@ use std::io::BufReader;
 use std::net::Ipv4Addr;
 use std::str::FromStr;
 use std::sync::Arc;
-use prettytable::{Table, Row, Cell, Attr, color, format};
+
+mod enrichment;
+use crate::cli::enrichment::{IP2ASNTransformer, IP2CountryTransformer, TransformPipeline, Transformer, Columnizable};
 
 pub fn execute(args: &ArgMatches) {
     let server = args.value_of("server").unwrap();
@@ -32,11 +35,15 @@ pub fn execute(args: &ArgMatches) {
                         .with_style(Attr::Bold)
                         .with_style(Attr::ForegroundColor(color::GREEN)),
                     Cell::new("Version")
-                    .with_style(Attr::Bold)
-                    .with_style(Attr::ForegroundColor(color::GREEN))
+                        .with_style(Attr::Bold)
+                        .with_style(Attr::ForegroundColor(color::GREEN)),
                 ]));
                 for client in client_list.get_clients() {
-                    table.add_row(row!(client.index, client.get_metadata().hostname, client.get_metadata().version));
+                    table.add_row(row!(
+                        client.index,
+                        client.get_metadata().hostname,
+                        client.get_metadata().version
+                    ));
                 }
                 table.printstd();
                 println!("Connected clients: {}", client_list.get_clients().len());
@@ -83,28 +90,66 @@ pub fn execute(args: &ArgMatches) {
         // Send task to server
         match grpc_client.do_task(&schedule_task) {
             Ok(ack) => {
-                println!("successfully connected, id: {}", ack.get_task_id());
+                info!("successfully connected, id: {}", ack.get_task_id());
                 success = ack.get_success();
                 scheduled_task_id = Some(ack.get_task_id());
                 if !ack.get_success() {
                     error_message = Some(ack.get_error_message().to_string());
                 }
             }
-            Err(e) => println!("unable to connect: {} ({})", e.description(), e),
+            Err(e) => error!("unable to connect: {} ({})", e.description(), e),
         }
 
         if success {
+            let transform_pipeline = TransformPipeline {
+                pipeline: vec![
+                IP2CountryTransformer::new(
+                    "source_address",
+                    "source_address_country",
+                ),
+                IP2ASNTransformer::new(
+                    "source_address",
+                    "source_address_asn",
+                )
+                ],
+            };
+
+            // Determine headers and print them if we are outputting CSV
+            let mut headers = TaskResult::get_headers();
+            transform_pipeline.pipeline.iter().for_each(|t| t.add_header(&mut headers));
+            if !matches.is_present("json") {
+                println!("{}", headers.join(","));
+            }
+
             let mut request_task_id = TaskId::new();
             request_task_id.set_task_id(scheduled_task_id.unwrap());
             let result = grpc_client.subscribe_result(&request_task_id).unwrap();
             result
-                .map(|i| println!("{}", i))
+                .map(move |i| {
+                    let data = i.get_data();
+                    for mut entry in data {
+                        for transformer in &transform_pipeline.pipeline {
+                            entry = transformer.transform(entry);
+                        }
+                        if matches.is_present("json") {
+                            println!("{}", serde_json::to_string(&entry).unwrap());
+                        } else {
+                            for (idx, header) in headers.iter().enumerate() {
+                                if idx != 0 {
+                                    print!(",");
+                                }
+                                print!("{}", entry[header]);
+                            }
+                            println!();
+                        }
+                    }
+                })
                 .map_err(|_| ())
                 .wait()
                 .for_each(drop);
         } else {
-            println!("failed to schedule task");
-            println!("Message: {}", error_message.unwrap());
+            error!("failed to schedule task");
+            error!("Message: {}", error_message.unwrap());
         }
     } else {
         unimplemented!();
