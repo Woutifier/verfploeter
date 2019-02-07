@@ -1,4 +1,4 @@
-use maxminddb::{Reader, OwnedReader};
+use maxminddb::{Reader};
 use maxminddb::geoip2::{Country, Isp};
 use std::collections::HashMap;
 use std::net::IpAddr;
@@ -115,18 +115,18 @@ pub struct TransformPipeline {
     pub pipeline: Vec<Box<dyn Transformer>>,
 }
 
-pub struct IP2CountryTransformer<'a> {
+pub struct IP2CountryTransformer {
     source: String,
     destination: String,
-    mmreader: OwnedReader<'a>,
+    mmreader: Reader<Vec<u8>>,
 }
 
-impl<'a> Transformer for IP2CountryTransformer<'a> {
+impl Transformer for IP2CountryTransformer {
     fn new(source: &str, destination: &str) -> Box<Self>
     where
         Self: Sized,
     {
-        let reader = maxminddb::Reader::open("data/GeoLite2-Country.mmdb").unwrap();
+        let reader = maxminddb::Reader::open_readfile("data/GeoLite2-Country.mmdb").unwrap();
         Box::new(IP2CountryTransformer {
             source: source.to_string(),
             destination: destination.to_string(),
@@ -154,18 +154,18 @@ impl<'a> Transformer for IP2CountryTransformer<'a> {
     }
 }
 
-pub struct IP2ASNTransformer<'a> {
+pub struct IP2ASNTransformer {
     source: String,
     destination: String,
-    mmreader: OwnedReader<'a>,
+    mmreader: Reader<Vec<u8>>,
 }
 
-impl<'a> Transformer for IP2ASNTransformer<'a> {
+impl Transformer for IP2ASNTransformer {
     fn new(source: &str, destination: &str) -> Box<Self>
     where
         Self: Sized,
     {
-        let reader = maxminddb::Reader::open("data/GeoLite2-ASN.mmdb").unwrap();
+        let reader = maxminddb::Reader::open_readfile("data/GeoLite2-ASN.mmdb").unwrap();
         Box::new(IP2ASNTransformer {
             source: source.to_string(),
             destination: destination.to_string(),

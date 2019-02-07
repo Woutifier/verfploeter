@@ -4,8 +4,6 @@ use super::schema::verfploeter_grpc::VerfploeterClient;
 use futures::sync::oneshot;
 use futures::*;
 use grpcio::{ChannelBuilder, Environment};
-//use std::sync::mpsc::{Receiver, Sender};
-use clap::ArgMatches;
 use futures::sync::mpsc::{Receiver, Sender};
 use std::collections::HashMap;
 use std::sync::Arc;
