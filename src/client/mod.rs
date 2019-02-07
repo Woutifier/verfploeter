@@ -22,21 +22,13 @@ pub struct Client {
 }
 
 impl Client {
-    pub fn new(args: &ArgMatches) -> Client {
+    pub fn new(grpc_host: String, client_hostname: String) -> Client {
         // Setup GRPC client
-        let host = args.value_of("server").unwrap();
-        let env = Arc::new(Environment::new(1));
-        let channel = ChannelBuilder::new(env)
-            .keepalive_time(Duration::from_secs(180))
-            .keepalive_timeout(Duration::from_secs(180))
-            .max_send_message_len(100 * 1024 * 1024)
-            .max_receive_message_len(100 * 1024 * 1024)
-            .connect(host);
-        let grpc_client = Arc::new(VerfploeterClient::new(channel));
+        let grpc_client = Client::create_grpc_client(&grpc_host);
 
         // Setup metadata
         let mut metadata = Metadata::new();
-        metadata.set_hostname(args.value_of("hostname").unwrap().to_string());
+        metadata.set_hostname(client_hostname);
         metadata.set_version(env!("CARGO_PKG_VERSION").to_string());
 
         // Setup task_handlers
@@ -52,6 +44,20 @@ impl Client {
             task_handlers,
             metadata,
         }
+    }
+
+    fn create_grpc_client(host: &str) -> Arc<VerfploeterClient> {
+        let env = Arc::new(Environment::new(1));
+
+        // Create the channel (with all its parameters)
+        let channel = ChannelBuilder::new(env)
+            .keepalive_time(Duration::from_secs(180))
+            .keepalive_timeout(Duration::from_secs(180))
+            .max_send_message_len(100 * 1024 * 1024)
+            .max_receive_message_len(100 * 1024 * 1024)
+            .connect(host);
+
+        Arc::new(VerfploeterClient::new(channel))
     }
 
     pub fn start(mut self) {

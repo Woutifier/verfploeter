@@ -48,7 +48,9 @@ fn main() {
             thread::sleep(Duration::from_secs(1));
         }
     } else if let Some(client_matches) = matches.subcommand_matches("client") {
-        let c = client::Client::new(client_matches);
+        let grpc_host = client_matches.value_of("server").unwrap().to_string();
+        let client_hostname = client_matches.value_of("hostname").unwrap().to_string();
+        let c = client::Client::new(grpc_host, client_hostname);
         c.start();
     } else if let Some(cli_matches) = matches.subcommand_matches("cli") {
         cli::execute(cli_matches);

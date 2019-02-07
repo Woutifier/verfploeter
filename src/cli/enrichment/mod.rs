@@ -68,12 +68,14 @@ impl Columnizable for TaskResult {
         let task_id = self.get_task_id();
         let client_id = self.get_client().get_metadata().get_hostname();
         let mut results: Vec<HashMap<String, RowData>> = Vec::new();
-        for (idx, result) in self.get_result_list().iter().enumerate() {
+        for result in self.get_result_list().iter() {
             if result.has_ping() {
                 let ping = result.get_ping();
                 let mut row: HashMap<String, RowData> = HashMap::new();
                 row.insert("task_id".to_string(), task_id.into());
                 row.insert("client_id".to_string(), client_id.into());
+                row.insert("transmit_time".to_string(), ping.get_payload().get_transmit_time().into());
+                row.insert("receive_time".to_string(), ping.get_receive_time().into());
                 row.insert(
                     "source_address".to_string(),
                     IpAddr::from(ping.get_source_address()).into(),
@@ -97,7 +99,7 @@ impl Columnizable for TaskResult {
     }
 
     fn get_headers() -> Vec<String> {
-        vec!["task_id", "client_id", "source_address", "destination_address", "meta_source_address", "meta_destination_address"].into_iter().map(|s| s.to_string()).collect::<Vec<String>>()
+        vec!["task_id", "client_id", "transmit_time", "receive_time", "source_address", "destination_address", "meta_source_address", "meta_destination_address"].into_iter().map(|s| s.to_string()).collect::<Vec<String>>()
     }
 }
 
@@ -134,9 +136,16 @@ impl<'a> Transformer for IP2CountryTransformer<'a> {
 
     fn transform(&self, mut data: HashMap<String, RowData>) -> HashMap<String, RowData> {
         if let Some(RowData::IpAddress(source_data)) = data.get(&self.source) {
-            let country:Country = self.mmreader.lookup(*source_data).unwrap();
-            data.insert(self.destination.to_string(), country.country.unwrap().iso_code.unwrap().into());
+            if let Ok(country) = self.mmreader.lookup::<Country>(*source_data) {
+                if let Some(country) = country.country {
+                    if let Some(iso_code) = country.iso_code {
+                        data.insert(self.destination.to_string(), iso_code.into());
+                        return data;
+                    }
+                }
+            }
         }
+        data.insert(self.destination.to_string(), "Unknown".into());
         data
     }
 
@@ -166,9 +175,14 @@ impl<'a> Transformer for IP2ASNTransformer<'a> {
 
     fn transform(&self, mut data: HashMap<String, RowData>) -> HashMap<String, RowData> {
         if let Some(RowData::IpAddress(source_data)) = data.get(&self.source) {
-            let isp:Isp = self.mmreader.lookup(*source_data).unwrap();
-            data.insert(self.destination.to_string(), isp.autonomous_system_number.unwrap().into());
+            if let Ok(isp) = self.mmreader.lookup::<Isp>(*source_data) {
+                if let Some(autonomous_system_number) = isp.autonomous_system_number {
+                    data.insert(self.destination.to_string(), autonomous_system_number.into());
+                    return data;
+                }
+            }
         }
+        data.insert(self.destination.to_string(), "Unknown".into());
         data
     }
 

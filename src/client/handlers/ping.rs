@@ -21,6 +21,7 @@ use std::num::NonZeroU32;
 use std::sync::Mutex;
 use std::time::Duration;
 use std::u32;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 pub struct PingInbound {
     handles: Vec<JoinHandle<()>>,
@@ -57,6 +58,9 @@ impl TaskHandler for PingInbound {
             let result_queue = self.result_queue.clone();
             move || {
                 rx.for_each(|packet| {
+                    // Note the receive time
+                    let receive_time = current_timestamp();
+
                     // Extract payload
                     let mut ping_payload = None;
                     if let PacketPayload::ICMPv4 { value } = packet.payload {
@@ -80,6 +84,7 @@ impl TaskHandler for PingInbound {
                     pr.set_payload(ping_payload);
                     pr.set_source_address(packet.source_address.into());
                     pr.set_destination_address(packet.destination_address.into());
+                    pr.set_receive_time(receive_time);
                     result.set_ping(pr);
 
                     // Put result in transmission queue
@@ -273,6 +278,9 @@ impl PingOutbound {
             payload.set_destination_address(ip.clone());
             payload.set_task_id(task.get_task_id());
 
+            // Get the current time
+            payload.set_transmit_time(current_timestamp());
+
             let bindaddress = format!("{}:0", Ipv4Addr::from(ip.get_v4()).to_string());
             // Todo: make the secret configurable
             let icmp =
@@ -296,5 +304,12 @@ impl PingOutbound {
                 .expect("unable to call send_to on socket");
         }
         debug!("finished ping");
+
+
     }
+}
+
+fn current_timestamp() -> u32 {
+    let current_time = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() as u32;
+    current_time
 }
