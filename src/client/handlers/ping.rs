@@ -216,6 +216,8 @@ impl TaskHandler for PingOutbound {
                         // Perform the ping
                         PingOutbound::perform_ping(&i);
 
+                            // Wait for a timeout
+                            thread::sleep(Duration::from_secs(10));
                         // After finishing notify the server that the task is finished
                         let mut task_id = TaskId::new();
                         task_id.task_id = i.task_id;
