@@ -93,6 +93,19 @@ impl VerfploeterService {
         }
         None
     }
+
+    fn disconnect_subscribers(&self, task_id: u32) {
+        let mut list = self.subscription_list.write().unwrap();
+        if let Some(subscribers) = list.get(&task_id) {
+            debug!(
+                "disconnecting {} subscribers for task {}",
+                subscribers.len(),
+                task_id
+            );
+            subscribers.iter().for_each( drop);
+            list.remove(&task_id);
+        }
+    }
 }
 
 impl Verfploeter for VerfploeterService {
@@ -245,6 +258,12 @@ impl Verfploeter for VerfploeterService {
         self.register_subscriber(req.get_task_id(), tx);
 
         self.runtime.executor().spawn(f);
+    }
+
+    fn task_finished(&mut self, ctx: RpcContext, req: TaskId, sink: UnarySink<Ack>) {
+        let task_id = req.get_task_id();
+        self.disconnect_subscribers(task_id);
+        ctx.spawn(sink.success(Ack::new()).map_err(|_| ()));
     }
 }
 

@@ -53,6 +53,13 @@ const METHOD_VERFPLOETER_SUBSCRIBE_RESULT: ::grpcio::Method<super::verfploeter::
     resp_mar: ::grpcio::Marshaller { ser: ::grpcio::pb_ser, de: ::grpcio::pb_de },
 };
 
+const METHOD_VERFPLOETER_TASK_FINISHED: ::grpcio::Method<super::verfploeter::TaskId, super::verfploeter::Ack> = ::grpcio::Method {
+    ty: ::grpcio::MethodType::Unary,
+    name: "/Verfploeter/task_finished",
+    req_mar: ::grpcio::Marshaller { ser: ::grpcio::pb_ser, de: ::grpcio::pb_de },
+    resp_mar: ::grpcio::Marshaller { ser: ::grpcio::pb_ser, de: ::grpcio::pb_de },
+};
+
 pub struct VerfploeterClient {
     client: ::grpcio::Client,
 }
@@ -127,6 +134,22 @@ impl VerfploeterClient {
     pub fn subscribe_result(&self, req: &super::verfploeter::TaskId) -> ::grpcio::Result<::grpcio::ClientSStreamReceiver<super::verfploeter::TaskResult>> {
         self.subscribe_result_opt(req, ::grpcio::CallOption::default())
     }
+
+    pub fn task_finished_opt(&self, req: &super::verfploeter::TaskId, opt: ::grpcio::CallOption) -> ::grpcio::Result<super::verfploeter::Ack> {
+        self.client.unary_call(&METHOD_VERFPLOETER_TASK_FINISHED, req, opt)
+    }
+
+    pub fn task_finished(&self, req: &super::verfploeter::TaskId) -> ::grpcio::Result<super::verfploeter::Ack> {
+        self.task_finished_opt(req, ::grpcio::CallOption::default())
+    }
+
+    pub fn task_finished_async_opt(&self, req: &super::verfploeter::TaskId, opt: ::grpcio::CallOption) -> ::grpcio::Result<::grpcio::ClientUnaryReceiver<super::verfploeter::Ack>> {
+        self.client.unary_call_async(&METHOD_VERFPLOETER_TASK_FINISHED, req, opt)
+    }
+
+    pub fn task_finished_async(&self, req: &super::verfploeter::TaskId) -> ::grpcio::Result<::grpcio::ClientUnaryReceiver<super::verfploeter::Ack>> {
+        self.task_finished_async_opt(req, ::grpcio::CallOption::default())
+    }
     pub fn spawn<F>(&self, f: F) where F: ::futures::Future<Item = (), Error = ()> + Send + 'static {
         self.client.spawn(f)
     }
@@ -138,6 +161,7 @@ pub trait Verfploeter {
     fn list_clients(&mut self, ctx: ::grpcio::RpcContext, req: super::verfploeter::Empty, sink: ::grpcio::UnarySink<super::verfploeter::ClientList>);
     fn send_result(&mut self, ctx: ::grpcio::RpcContext, req: super::verfploeter::TaskResult, sink: ::grpcio::UnarySink<super::verfploeter::Ack>);
     fn subscribe_result(&mut self, ctx: ::grpcio::RpcContext, req: super::verfploeter::TaskId, sink: ::grpcio::ServerStreamingSink<super::verfploeter::TaskResult>);
+    fn task_finished(&mut self, ctx: ::grpcio::RpcContext, req: super::verfploeter::TaskId, sink: ::grpcio::UnarySink<super::verfploeter::Ack>);
 }
 
 pub fn create_verfploeter<S: Verfploeter + Send + Clone + 'static>(s: S) -> ::grpcio::Service {
@@ -161,6 +185,10 @@ pub fn create_verfploeter<S: Verfploeter + Send + Clone + 'static>(s: S) -> ::gr
     let mut instance = s.clone();
     builder = builder.add_server_streaming_handler(&METHOD_VERFPLOETER_SUBSCRIBE_RESULT, move |ctx, req, resp| {
         instance.subscribe_result(ctx, req, resp)
+    });
+    let mut instance = s.clone();
+    builder = builder.add_unary_handler(&METHOD_VERFPLOETER_TASK_FINISHED, move |ctx, req, resp| {
+        instance.task_finished(ctx, req, resp)
     });
     builder.build()
 }

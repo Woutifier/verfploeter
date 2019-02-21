@@ -1,7 +1,7 @@
 use super::{ChannelType, TaskHandler};
 use crate::net::{ICMP4Packet, IPv4Packet, PacketPayload};
 use crate::schema::verfploeter::{
-    Client, Metadata, PingPayload, PingResult, Result, Task, TaskResult,
+    Client, Metadata, PingPayload, PingResult, Result, Task, TaskResult, TaskId,
 };
 use crate::schema::verfploeter_grpc::VerfploeterClient;
 use crate::schema::Signable;
@@ -20,8 +20,8 @@ use std::net::{Ipv4Addr, Shutdown, SocketAddr};
 use std::num::NonZeroU32;
 use std::sync::Mutex;
 use std::time::Duration;
-use std::u32;
 use std::time::{SystemTime, UNIX_EPOCH};
+use std::u32;
 
 pub struct PingInbound {
     handles: Vec<JoinHandle<()>>,
@@ -199,17 +199,27 @@ pub struct PingOutbound {
     shutdown_tx: Option<oneshot::Sender<()>>,
     shutdown_rx: Option<oneshot::Receiver<()>>,
     handle: Option<JoinHandle<()>>,
+    grpc_client: Arc<VerfploeterClient>,
 }
 
 impl TaskHandler for PingOutbound {
     fn start(&mut self) {
         let handle = thread::spawn({
+            let grpc_client = self.grpc_client.clone();
             let rx = self.rx.take().unwrap();
             let shutdown_rx = self.shutdown_rx.take().unwrap();
             move || {
                 let handler = rx
-                    .for_each(|i| {
+                    .for_each(
+                        |i|
+                        {
+                        // Perform the ping
                         PingOutbound::perform_ping(&i);
+
+                        // After finishing notify the server that the task is finished
+                        let mut task_id = TaskId::new();
+                        task_id.task_id = i.task_id;
+                        grpc_client.task_finished(&task_id.clone()).expect("Could not deliver task finished notification");
                         futures::future::ok(())
                     })
                     .map_err(|_| error!("exiting outbound thread"));
@@ -236,7 +246,7 @@ impl TaskHandler for PingOutbound {
 }
 
 impl PingOutbound {
-    pub fn new() -> PingOutbound {
+    pub fn new(grpc_client: Arc<VerfploeterClient>) -> PingOutbound {
         let (tx, rx): (Sender<Task>, Receiver<Task>) = channel(10);
         let (shutdown_tx, shutdown_rx) = oneshot::channel();
         PingOutbound {
@@ -245,6 +255,7 @@ impl PingOutbound {
             shutdown_tx: Some(shutdown_tx),
             shutdown_rx: Some(shutdown_rx),
             handle: None,
+            grpc_client
         }
     }
 
@@ -304,12 +315,13 @@ impl PingOutbound {
                 .expect("unable to call send_to on socket");
         }
         debug!("finished ping");
-
-
     }
 }
 
 fn current_timestamp() -> u32 {
-    let current_time = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() as u32;
+    let current_time = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs() as u32;
     current_time
 }

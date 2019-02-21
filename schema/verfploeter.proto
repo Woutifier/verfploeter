@@ -6,6 +6,7 @@ service Verfploeter {
     rpc list_clients(Empty) returns (ClientList) {}
     rpc send_result(TaskResult) returns (Ack) {}
     rpc subscribe_result(TaskId) returns (stream TaskResult) {}
+    rpc task_finished(TaskId) returns (Ack) {}
 }
 
 message Empty {}
@@ -64,6 +65,7 @@ message TaskResult {
     uint32 task_id = 1;
     Client client = 2;
     repeated Result result_list = 3;
+    bool is_finished = 4;
 }
 
 message Result {

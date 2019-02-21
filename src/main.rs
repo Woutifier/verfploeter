@@ -13,10 +13,10 @@ extern crate tokio;
 #[macro_use]
 extern crate prettytable;
 extern crate hmac;
-extern crate sha2;
 extern crate maxminddb;
-extern crate serde_json;
 extern crate serde_derive;
+extern crate serde_json;
+extern crate sha2;
 
 mod cli;
 mod client;
@@ -92,7 +92,7 @@ fn parse_cmd<'a>() -> ArgMatches<'a> {
                         .default_value("127.0.0.1:50001")
                 )
                 .subcommand(SubCommand::with_name("client-list").about("retrieves a list of currently connected clients from the server"))
-                .subcommand(SubCommand::with_name("do-verfploeter").about("performs verfploeter on the indicated client")
+                .subcommand(SubCommand::with_name("start").about("performs verfploeter on the indicated client")
                     .arg(Arg::with_name("CLIENT_INDEX").help("Sets the client to run verfploeter from (i.e. the outbound ping)")
                     .required(true)
                     .index(1))
@@ -110,6 +110,14 @@ fn parse_cmd<'a>() -> ArgMatches<'a> {
                         .short("j")
                         .multiple(false)
                         .help("Output results in JSON format"))
+                    .arg(Arg::with_name("ip2country")
+                        .short("c")
+                        .takes_value(true)
+                        .help("Adds a column with IP2Country information. Needs a path to a IP2Country database (MaxMind binary format)"))
+                    .arg(Arg::with_name("ip2asn")
+                        .short("a")
+                        .takes_value(true)
+                        .help("Adds a column with IP2ASN information. Needs a path to a IP2ASN database (MaxMind binary format)"))
                 )
         )
         .get_matches()

@@ -1,11 +1,10 @@
-use maxminddb::{Reader};
-use maxminddb::geoip2::{Country, Isp};
-use std::collections::HashMap;
-use std::net::IpAddr;
 use crate::schema::verfploeter::TaskResult;
-use serde::{Serialize,Serializer};
+use maxminddb::geoip2::{Country, Isp};
+use maxminddb::Reader;
+use serde::{Serialize, Serializer};
+use std::collections::HashMap;
 use std::fmt;
-
+use std::net::IpAddr;
 
 pub trait Columnizable {
     fn get_data(&self) -> Vec<HashMap<String, RowData>>;
@@ -16,11 +15,14 @@ pub trait Columnizable {
 pub enum RowData {
     String(String),
     Integer(u32),
-    IpAddress(IpAddr)
+    IpAddress(IpAddr),
 }
 
 impl Serialize for RowData {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         match self {
             RowData::String(d) => return serializer.serialize_str(d),
             RowData::Integer(i) => return serializer.serialize_u32(*i),
@@ -74,7 +76,10 @@ impl Columnizable for TaskResult {
                 let mut row: HashMap<String, RowData> = HashMap::new();
                 row.insert("task_id".to_string(), task_id.into());
                 row.insert("client_id".to_string(), client_id.into());
-                row.insert("transmit_time".to_string(), ping.get_payload().get_transmit_time().into());
+                row.insert(
+                    "transmit_time".to_string(),
+                    ping.get_payload().get_transmit_time().into(),
+                );
                 row.insert("receive_time".to_string(), ping.get_receive_time().into());
                 row.insert(
                     "source_address".to_string(),
@@ -99,12 +104,24 @@ impl Columnizable for TaskResult {
     }
 
     fn get_headers() -> Vec<String> {
-        vec!["task_id", "client_id", "transmit_time", "receive_time", "source_address", "destination_address", "meta_source_address", "meta_destination_address"].into_iter().map(|s| s.to_string()).collect::<Vec<String>>()
+        vec![
+            "task_id",
+            "client_id",
+            "transmit_time",
+            "receive_time",
+            "source_address",
+            "destination_address",
+            "meta_source_address",
+            "meta_destination_address",
+        ]
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect::<Vec<String>>()
     }
 }
 
 pub trait Transformer {
-    fn new(source: &str, destination: &str) -> Box<Self>
+    fn new(source: &str, destination: &str, data: &str) -> Box<Self>
     where
         Self: Sized;
     fn transform(&self, data: HashMap<String, RowData>) -> HashMap<String, RowData>;
@@ -122,15 +139,16 @@ pub struct IP2CountryTransformer {
 }
 
 impl Transformer for IP2CountryTransformer {
-    fn new(source: &str, destination: &str) -> Box<Self>
+    fn new(source: &str, destination: &str, data: &str) -> Box<Self>
     where
         Self: Sized,
     {
-        let reader = maxminddb::Reader::open_readfile("data/GeoLite2-Country.mmdb").unwrap();
+        let reader =
+            maxminddb::Reader::open_readfile(data).expect("Could not open IP2Country file");
         Box::new(IP2CountryTransformer {
             source: source.to_string(),
             destination: destination.to_string(),
-            mmreader: reader
+            mmreader: reader,
         })
     }
 
@@ -161,15 +179,15 @@ pub struct IP2ASNTransformer {
 }
 
 impl Transformer for IP2ASNTransformer {
-    fn new(source: &str, destination: &str) -> Box<Self>
+    fn new(source: &str, destination: &str, data: &str) -> Box<Self>
     where
         Self: Sized,
     {
-        let reader = maxminddb::Reader::open_readfile("data/GeoLite2-ASN.mmdb").unwrap();
+        let reader = maxminddb::Reader::open_readfile(data).expect("Could not open IP2ASN file");
         Box::new(IP2ASNTransformer {
             source: source.to_string(),
             destination: destination.to_string(),
-            mmreader: reader
+            mmreader: reader,
         })
     }
 
@@ -177,7 +195,10 @@ impl Transformer for IP2ASNTransformer {
         if let Some(RowData::IpAddress(source_data)) = data.get(&self.source) {
             if let Ok(isp) = self.mmreader.lookup::<Isp>(*source_data) {
                 if let Some(autonomous_system_number) = isp.autonomous_system_number {
-                    data.insert(self.destination.to_string(), autonomous_system_number.into());
+                    data.insert(
+                        self.destination.to_string(),
+                        autonomous_system_number.into(),
+                    );
                     return data;
                 }
             }
