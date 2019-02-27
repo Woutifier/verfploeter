@@ -93,7 +93,7 @@ fn parse_cmd<'a>() -> ArgMatches<'a> {
                 )
                 .subcommand(SubCommand::with_name("client-list").about("retrieves a list of currently connected clients from the server"))
                 .subcommand(SubCommand::with_name("start").about("performs verfploeter on the indicated client")
-                    .arg(Arg::with_name("CLIENT_INDEX").help("Sets the client to run verfploeter from (i.e. the outbound ping)")
+                    .arg(Arg::with_name("CLIENT_HOSTNAME").help("Sets the client to run verfploeter from (i.e. the outbound ping)")
                     .required(true)
                     .index(1))
                     .arg(Arg::with_name("SOURCE_IP").help("The IP to send the pings from")

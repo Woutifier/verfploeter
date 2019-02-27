@@ -1,4 +1,4 @@
-use super::schema::verfploeter::{Address, Client, Empty, Ping, ScheduleTask, TaskId, TaskResult};
+use super::schema::verfploeter::{Address, Client, Empty, Ping, ScheduleTask, TaskId, TaskResult, Metadata};
 use super::schema::verfploeter_grpc::VerfploeterClient;
 use clap::ArgMatches;
 use futures::Stream;
@@ -27,7 +27,7 @@ pub fn execute(args: &ArgMatches) {
     if args.subcommand_matches("client-list").is_some() {
         print_client_list(&grpc_client)
     } else if let Some(matches) = args.subcommand_matches("start") {
-        perform_verfploeter_measurement(args, grpc_client, matches)
+        perform_verfploeter_measurement(matches, grpc_client, matches)
     } else {
         unimplemented!();
     }
@@ -69,7 +69,7 @@ fn perform_verfploeter_measurement(
     matches: &ArgMatches,
 ) -> () {
     // Get parameters
-    let client_index: u32 = matches.value_of("CLIENT_INDEX").unwrap().parse().unwrap();
+    let client_hostname = matches.value_of("CLIENT_HOSTNAME").unwrap();
     let source_ip: u32 =
         u32::from(Ipv4Addr::from_str(matches.value_of("SOURCE_IP").unwrap()).unwrap());
     let ip_file = matches.value_of("IP_FILE").unwrap();
@@ -91,7 +91,10 @@ fn perform_verfploeter_measurement(
     ping.set_source_address(address);
     ping.set_destination_addresses(RepeatedField::from(ips));
     let mut client = Client::new();
-    client.index = client_index;
+    let mut metadata = Metadata::new();
+    metadata.hostname = client_hostname.to_string();
+    client.set_metadata(metadata);
+    
     let mut schedule_task = ScheduleTask::new();
     schedule_task.set_ping(ping);
     schedule_task.set_client(client);
@@ -119,14 +122,16 @@ fn perform_verfploeter_measurement(
                 "source_address_country",
                 ip2country_db_path,
             ));
+            info!("added ip2country transformer");
         }
 
         if let Some(ip2asn_db_path) = args.value_of("ip2asn") {
             transform_pipeline.pipeline.push(IP2ASNTransformer::new(
                 "source_address",
-                "source_address_country",
+                "source_address_asn",
                 ip2asn_db_path,
             ));
+            info!("added ip2asn transformer");
         }
 
         // Determine headers and print them if we are outputting CSV

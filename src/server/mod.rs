@@ -173,9 +173,19 @@ impl Verfploeter for VerfploeterService {
 
         // Handle a ping task
         if req.has_ping() {
-            let tx = self
-                .connection_manager
-                .get_client_tx(req.get_client().index);
+            let tx;
+
+            // Get a connection to the client, either by hostname (if provided) or by index
+            if req.get_client().get_metadata().hostname.len() > 0 {
+                tx = self
+                    .connection_manager
+                    .get_client_tx_by_hostname(&req.get_client().get_metadata().hostname);
+            } else {
+                tx = self
+                    .connection_manager
+                    .get_client_tx_by_idx(req.get_client().index);
+            }
+
             if let Some(tx) = tx {
                 let mut t = Task::new();
 
@@ -309,12 +319,19 @@ impl ConnectionManager {
         );
     }
 
-    fn get_client_tx(&self, connection_id: u32) -> Option<Sender<Task>> {
+    fn get_client_tx_by_idx(&self, connection_id: u32) -> Option<Sender<Task>> {
         let hashmap = self.connections.read().unwrap();
         if let Some(v) = hashmap.get(&connection_id) {
             return Some(v.channel.clone());
         }
         None
+    }
+
+    fn get_client_tx_by_hostname(&self, hostname: &str) -> Option<Sender<Task>> {
+        let hashmap = self.connections.read().unwrap();
+        return hashmap.iter()
+            .find(|f| f.1.metadata.hostname == hostname)
+            .map(|f| f.1.channel.clone());
     }
 }
 
@@ -353,9 +370,30 @@ mod connection_manager {
 
         for id in registered_ids {
             assert!(
-                manager.get_client_tx(id).is_some(),
+                manager.get_client_tx_by_idx(id).is_some(),
                 "registered connection should be retrievable from connection manager"
             );
         }
+    }
+
+    #[test]
+    fn connections_can_be_retrieved_by_hostname() {
+        let manager = ConnectionManager::new();
+
+        for i in 0..5 {
+            let connection_id = manager.generate_connection_id();
+            let (channel_tx, _) = channel(0);
+            let mut connection = Connection {
+                channel: channel_tx,
+                metadata: Metadata::default(),
+            };
+            connection.metadata.hostname = format!("host{}", i);
+            manager.register_connection(connection_id, connection);
+        }
+
+        assert!(
+            manager.get_client_tx_by_hostname("host4").is_some(),
+            "registered connection should be retrievable from connection manager"
+        );
     }
 }
