@@ -1,7 +1,7 @@
 use super::{ChannelType, TaskHandler};
 use crate::net::{ICMP4Packet, IPv4Packet, PacketPayload};
 use crate::schema::verfploeter::{
-    Client, Metadata, PingPayload, PingResult, Result, Task, TaskResult, TaskId,
+    Client, Metadata, PingPayload, PingResult, Result, Task, TaskId, TaskResult,
 };
 use crate::schema::verfploeter_grpc::VerfploeterClient;
 use crate::schema::Signable;
@@ -210,18 +210,18 @@ impl TaskHandler for PingOutbound {
             let shutdown_rx = self.shutdown_rx.take().unwrap();
             move || {
                 let handler = rx
-                    .for_each(
-                        |i|
-                        {
+                    .for_each(|i| {
                         // Perform the ping
                         PingOutbound::perform_ping(&i);
 
-                            // Wait for a timeout
-                            thread::sleep(Duration::from_secs(10));
+                        // Wait for a timeout
+                        thread::sleep(Duration::from_secs(10));
                         // After finishing notify the server that the task is finished
                         let mut task_id = TaskId::new();
                         task_id.task_id = i.task_id;
-                        grpc_client.task_finished(&task_id.clone()).expect("Could not deliver task finished notification");
+                        grpc_client
+                            .task_finished(&task_id.clone())
+                            .expect("Could not deliver task finished notification");
                         futures::future::ok(())
                     })
                     .map_err(|_| error!("exiting outbound thread"));
@@ -257,7 +257,7 @@ impl PingOutbound {
             shutdown_tx: Some(shutdown_tx),
             shutdown_rx: Some(shutdown_rx),
             handle: None,
-            grpc_client
+            grpc_client,
         }
     }
 
@@ -305,25 +305,24 @@ impl PingOutbound {
                 //thread::sleep(v.wait_time_from(Instant::now()));
             }
 
-            socket
-                .send_to(
-                    &icmp,
-                    &bindaddress
-                        .to_string()
-                        .parse::<SocketAddr>()
-                        .unwrap()
-                        .into(),
-                )
-                .expect("unable to call send_to on socket");
+            if let Err(e) = socket.send_to(
+                &icmp,
+                &bindaddress
+                    .to_string()
+                    .parse::<SocketAddr>()
+                    .unwrap()
+                    .into(),
+            ) {
+                error!("Failed to send packet to socket: {:?}", e);
+            }
         }
         debug!("finished ping");
     }
 }
 
 fn current_timestamp() -> u32 {
-    let current_time = SystemTime::now()
+    SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
-        .as_secs() as u32;
-    current_time
+        .as_secs() as u32
 }

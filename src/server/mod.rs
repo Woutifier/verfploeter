@@ -102,7 +102,7 @@ impl VerfploeterService {
                 subscribers.len(),
                 task_id
             );
-            subscribers.iter().for_each( drop);
+            subscribers.iter().for_each(drop);
             list.remove(&task_id);
         }
     }
@@ -173,18 +173,17 @@ impl Verfploeter for VerfploeterService {
 
         // Handle a ping task
         if req.has_ping() {
-            let tx;
-
+            let tx=
             // Get a connection to the client, either by hostname (if provided) or by index
-            if req.get_client().get_metadata().hostname.len() > 0 {
-                tx = self
+            if !req.get_client().get_metadata().hostname.is_empty() {
+                self
                     .connection_manager
-                    .get_client_tx_by_hostname(&req.get_client().get_metadata().hostname);
+                    .get_client_tx_by_hostname(&req.get_client().get_metadata().hostname)
             } else {
-                tx = self
+                self
                     .connection_manager
-                    .get_client_tx_by_idx(req.get_client().index);
-            }
+                    .get_client_tx_by_idx(req.get_client().index)
+            };
 
             if let Some(tx) = tx {
                 let mut t = Task::new();
@@ -329,9 +328,10 @@ impl ConnectionManager {
 
     fn get_client_tx_by_hostname(&self, hostname: &str) -> Option<Sender<Task>> {
         let hashmap = self.connections.read().unwrap();
-        return hashmap.iter()
+        hashmap
+            .iter()
             .find(|f| f.1.metadata.hostname == hostname)
-            .map(|f| f.1.channel.clone());
+            .map(|f| f.1.channel.clone())
     }
 }
 

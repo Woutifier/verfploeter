@@ -24,9 +24,9 @@ impl Serialize for RowData {
         S: Serializer,
     {
         match self {
-            RowData::String(d) => return serializer.serialize_str(d),
-            RowData::Integer(i) => return serializer.serialize_u32(*i),
-            RowData::IpAddress(i) => return serializer.serialize_str(&i.to_string()),
+            RowData::String(d) => serializer.serialize_str(d),
+            RowData::Integer(i) => serializer.serialize_u32(*i),
+            RowData::IpAddress(i) => serializer.serialize_str(&i.to_string()),
         }
     }
 }

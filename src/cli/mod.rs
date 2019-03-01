@@ -1,4 +1,6 @@
-use super::schema::verfploeter::{Address, Client, Empty, Ping, ScheduleTask, TaskId, TaskResult, Metadata};
+use super::schema::verfploeter::{
+    Address, Client, Empty, Metadata, Ping, ScheduleTask, TaskId, TaskResult,
+};
 use super::schema::verfploeter_grpc::VerfploeterClient;
 use clap::ArgMatches;
 use futures::Stream;
@@ -27,13 +29,13 @@ pub fn execute(args: &ArgMatches) {
     if args.subcommand_matches("client-list").is_some() {
         print_client_list(&grpc_client)
     } else if let Some(matches) = args.subcommand_matches("start") {
-        perform_verfploeter_measurement(matches, grpc_client, matches)
+        perform_verfploeter_measurement(matches, &grpc_client, matches)
     } else {
         unimplemented!();
     }
 }
 
-fn print_client_list(grpc_client: &VerfploeterClient) -> () {
+fn print_client_list(grpc_client: &VerfploeterClient) {
     match grpc_client.list_clients(&Empty::new()) {
         Ok(client_list) => {
             let mut table = Table::new();
@@ -65,9 +67,9 @@ fn print_client_list(grpc_client: &VerfploeterClient) -> () {
 
 fn perform_verfploeter_measurement(
     args: &ArgMatches,
-    grpc_client: VerfploeterClient,
+    grpc_client: &VerfploeterClient,
     matches: &ArgMatches,
-) -> () {
+) {
     // Get parameters
     let client_hostname = matches.value_of("CLIENT_HOSTNAME").unwrap();
     let source_ip: u32 =
@@ -94,7 +96,7 @@ fn perform_verfploeter_measurement(
     let mut metadata = Metadata::new();
     metadata.hostname = client_hostname.to_string();
     client.set_metadata(metadata);
-    
+
     let mut schedule_task = ScheduleTask::new();
     schedule_task.set_ping(ping);
     schedule_task.set_client(client);

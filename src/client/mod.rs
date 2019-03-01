@@ -20,7 +20,7 @@ pub struct Client {
 }
 
 impl Client {
-    pub fn new(grpc_host: String, client_hostname: String) -> Client {
+    pub fn new(grpc_host: &str, client_hostname: String) -> Client {
         // Setup GRPC client
         let grpc_client = Client::create_grpc_client(&grpc_host);
 
@@ -31,7 +31,10 @@ impl Client {
 
         // Setup task_handlers
         let mut task_handlers: HashMap<String, Box<dyn TaskHandler>> = HashMap::new();
-        task_handlers.insert("ping_outbound".to_string(), Box::new(PingOutbound::new(grpc_client.clone())));
+        task_handlers.insert(
+            "ping_outbound".to_string(),
+            Box::new(PingOutbound::new(grpc_client.clone())),
+        );
         task_handlers.insert(
             "ping_inbound".to_string(),
             Box::new(PingInbound::new(metadata.clone(), grpc_client.clone())),
@@ -85,8 +88,6 @@ impl Client {
                             debug!("got ping task");
                             tx.clone().send(i).wait().unwrap();
                             debug!("sent to handler");
-                        } else {
-                            debug!("got keepalive");
                         }
                         futures::future::ok(())
                     }
