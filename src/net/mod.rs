@@ -5,6 +5,7 @@ use std::net::Ipv4Addr;
 
 #[derive(Debug)]
 pub struct IPv4Packet {
+    pub ttl: u8,
     pub source_address: Ipv4Addr,
     pub destination_address: Ipv4Addr,
     pub payload: PacketPayload,
@@ -23,7 +24,10 @@ impl From<&[u8]> for IPv4Packet {
         // header length is in number of 32 bits i.e. 4 bytes (hence *4)
         let header_length: usize = ((cursor.read_u8().unwrap() & 0xF) * 4).into();
 
-        cursor.set_position(9);
+        cursor.set_position(8);
+        let ttl = cursor.read_u8().unwrap();
+
+        //cursor.set_position(9);
         let packet_type = cursor.read_u8().unwrap();
 
         cursor.set_position(12);
@@ -39,6 +43,7 @@ impl From<&[u8]> for IPv4Packet {
         };
 
         IPv4Packet {
+            ttl,
             source_address,
             destination_address,
             payload,

@@ -85,6 +85,7 @@ impl TaskHandler for PingInbound {
                     pr.set_source_address(packet.source_address.into());
                     pr.set_destination_address(packet.destination_address.into());
                     pr.set_receive_time(receive_time);
+                    pr.set_ttl(packet.ttl.into());
                     result.set_ping(pr);
 
                     // Put result in transmission queue

@@ -79,6 +79,7 @@ message PingResult {
     Address destination_address = 2;
     uint32 receive_time = 3;
     PingPayload payload = 4;
+    uint32 ttl = 5;
 }
 
 message PingPayload {
