@@ -36,7 +36,7 @@ pub struct PingInbound {
 impl TaskHandler for PingInbound {
     fn start(&mut self) {
         let (tx, rx): (Sender<IPv4Packet>, Receiver<IPv4Packet>) = channel(1024);
-        let handle = thread::spawn({
+        let packet_receiver_handle = thread::spawn({
             let socket = self.socket.clone();
             move || {
                 let mut buffer: Vec<u8> = vec![0; 1500];
@@ -54,7 +54,7 @@ impl TaskHandler for PingInbound {
             }
         });
 
-        let handle2 = thread::spawn({
+        let packet_processor_handle = thread::spawn({
             let result_queue = self.result_queue.clone();
             move || {
                 rx.for_each(|packet| {
@@ -104,7 +104,7 @@ impl TaskHandler for PingInbound {
             }
         });
 
-        let handle3 = thread::spawn({
+        let packet_transmitter_handle = thread::spawn({
             let grpc_client = self.grpc_client.clone();
             let result_queue = self.result_queue.clone();
             let poison_tx = self.poison_tx.take().unwrap();
@@ -157,9 +157,9 @@ impl TaskHandler for PingInbound {
                 }
             }
         });
-        self.handles.push(handle);
-        self.handles.push(handle2);
-        self.handles.push(handle3);
+        self.handles.push(packet_receiver_handle);
+        self.handles.push(packet_processor_handle);
+        self.handles.push(packet_transmitter_handle);
     }
 
     fn exit(&mut self) {

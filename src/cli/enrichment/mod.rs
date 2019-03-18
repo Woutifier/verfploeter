@@ -97,10 +97,7 @@ impl Columnizable for TaskResult {
                     "meta_destination_address".to_string(),
                     IpAddr::from(ping.get_payload().get_destination_address()).into(),
                 );
-                row.insert(
-                    "ttl".to_string(),
-                    ping.ttl.into(),
-                );
+                row.insert("ttl".to_string(), ping.ttl.into());
                 results.push(row);
             }
         }
@@ -117,7 +114,7 @@ impl Columnizable for TaskResult {
             "destination_address",
             "meta_source_address",
             "meta_destination_address",
-            "ttl"
+            "ttl",
         ]
         .into_iter()
         .map(|s| s.to_string())

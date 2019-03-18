@@ -26,8 +26,13 @@ mod server;
 
 use clap::{App, Arg, ArgMatches, SubCommand};
 
+use crate::server::ServerConfig;
+use std::fs::File;
+use std::io::BufReader;
+use std::io::Read;
 use std::thread;
 use std::time::Duration;
+use crate::client::ClientConfig;
 
 fn main() {
     // Setup logging
@@ -38,18 +43,54 @@ fn main() {
 
     info!("Starting verfploeter v{}", env!("CARGO_PKG_VERSION"));
 
-    if matches.subcommand_matches("server").is_some() {
-        let mut s = server::Server::new();
+    if let Some(server_matches) = matches.subcommand_matches("server") {
+        // Read certificate and private key from filesystem
+        let mut certificate = None;
+        let mut private_key = None;
+        if let (Some(certificate_path), Some(private_key_path)) = (
+            server_matches.value_of("certificate"),
+            server_matches.value_of("private-key"),
+        ) {
+            certificate = read_file_content(certificate_path);
+            private_key = read_file_content(private_key_path);
+        }
+
+        // Create the config struct
+        let config = ServerConfig {
+            certificate,
+            private_key,
+            port: server_matches.value_of("port").unwrap_or("50001").parse::<u16>().expect("Port should be a 16-bits integer"),
+        };
+
+        // Start the server
+        let mut s = server::Server::new(&config);
         s.start();
 
-        // todo: come up with a smarter way to keep the program alive
+        // TODO: come up with a smarter way to keep the program alive
         loop {
             thread::sleep(Duration::from_secs(1));
         }
     } else if let Some(client_matches) = matches.subcommand_matches("client") {
-        let grpc_host = client_matches.value_of("server").unwrap().to_string();
-        let client_hostname = client_matches.value_of("hostname").unwrap().to_string();
-        let c = client::Client::new(&grpc_host, client_hostname);
+        // Read certificate
+        let mut certificate = None;
+        if let Some(certificate_path) =
+            client_matches.value_of("certificate")
+         {
+            certificate = read_file_content(certificate_path);
+        }
+
+        let grpc_host = client_matches.value_of("server").unwrap();
+        let client_hostname = client_matches.value_of("hostname").unwrap();
+
+        // Create the config struct
+        let config = ClientConfig {
+            grpc_host,
+            client_hostname,
+            certificate
+        };
+
+        // Start the client
+        let c = client::Client::new(&config);
         c.start();
     } else if let Some(cli_matches) = matches.subcommand_matches("cli") {
         cli::execute(cli_matches);
@@ -59,12 +100,24 @@ fn main() {
     debug!("exiting");
 }
 
+fn read_file_content(path: &str) -> Option<Vec<u8>> {
+    let mut buffer = Vec::new();
+    BufReader::new(File::open(path).expect(&format!("Unable to open file: {}", path)))
+        .read_to_end(&mut buffer)
+        .expect(&format!("Unable to read file: {}", path));
+    Some(buffer)
+}
+
 fn parse_cmd<'a>() -> ArgMatches<'a> {
     App::new("Verfploeter")
         .version(env!("CARGO_PKG_VERSION"))
         .author("Wouter B. de Vries <w.b.devries@utwente.nl")
         .about("Performs measurements")
-        .subcommand(SubCommand::with_name("server").about("Launches the verfploeter server"))
+        .subcommand(SubCommand::with_name("server").about("Launches the verfploeter server")
+            .arg(Arg::with_name("certificate").short("c").takes_value(true).help("Certificate to use for SSL connection from clients (PEM-encoded file)").required(false))
+            .arg(Arg::with_name("private-key").short("P").takes_value(true).help("Private key to use for SSL connection from clients (PEM-encoded file)").required(false))
+            .arg(Arg::with_name("port").short("p").takes_value(true).help("Port to listen on").required(false))
+        )
         .subcommand(
             SubCommand::with_name("client").about("Launches the verfploeter client")
                 .arg(
@@ -81,6 +134,7 @@ fn parse_cmd<'a>() -> ArgMatches<'a> {
                         .help("hostname/ip address:port of the server")
                         .default_value("127.0.0.1:50001")
                 )
+                .arg(Arg::with_name("certificate").short("c").takes_value(true).help("Certificate to use for SSL connection to server (PEM-encoded file)").required(false))
         )
         .subcommand(
             SubCommand::with_name("cli").about("Verfploeter CLI")

@@ -4,6 +4,8 @@ use super::schema::verfploeter::{
 use super::schema::verfploeter_grpc::{self, Verfploeter};
 use futures::sync::mpsc::{channel, Sender};
 use futures::*;
+use grpcio::ChannelCredentialsBuilder;
+use grpcio::ServerCredentialsBuilder;
 use grpcio::{
     ChannelBuilder, Environment, RpcContext, Server as GrpcServer, ServerBuilder,
     ServerStreamingSink, UnarySink,
@@ -20,10 +22,14 @@ pub struct Server {
     grpc_server: GrpcServer,
 }
 
-impl Server {
-    pub fn new() -> Server {
-        let env = Arc::new(Environment::new(10));
+pub struct ServerConfig {
+    pub certificate: Option<Vec<u8>>,
+    pub private_key: Option<Vec<u8>>,
+    pub port: u16,
+}
 
+impl Server {
+    pub fn new(config: &ServerConfig) -> Server {
         let connection_manager = Arc::new(ConnectionManager::new());
         let s = VerfploeterService {
             connection_manager,
@@ -31,22 +37,56 @@ impl Server {
             current_task_id: Arc::new(Mutex::new(0)),
             runtime: Arc::new(Runtime::new().unwrap()),
         };
-        let service = verfploeter_grpc::create_verfploeter(s);
+
+        if config.certificate.is_some() && config.private_key.is_some() {
+            Server::create_secure_server(s, config)
+        } else {
+            Server::create_insecure_server(s, config)
+        }
+    }
+
+    fn create_server_builder(s: VerfploeterService) -> ServerBuilder {
+        let env = Arc::new(Environment::new(10));
 
         let channel_args = ChannelBuilder::new(Arc::clone(&env))
             .max_receive_message_len(100 * 1024 * 1024)
             .max_send_message_len(100 * 1024 * 1024)
             .build_args();
 
-        let grpc_server = ServerBuilder::new(env)
+        let service = verfploeter_grpc::create_verfploeter(s);
+
+        ServerBuilder::new(env)
             .channel_args(channel_args)
             .register_service(service)
-            .bind("0.0.0.0", 50001)
-            .build()
-            .unwrap();
-
-        Server { grpc_server }
     }
+
+    fn create_secure_server(s: VerfploeterService, config: &ServerConfig) -> Server {
+        info!("creating a secure server (SSL enabled)");
+        // Setup credentials
+        let credentials = ServerCredentialsBuilder::new()
+            .add_cert(
+                config.certificate.clone().unwrap(),
+                config.private_key.clone().unwrap(),
+            )
+            .build();
+        Server {
+            grpc_server: Server::create_server_builder(s)
+                .bind_secure("0.0.0.0", config.port, credentials)
+                .build()
+                .unwrap(),
+        }
+    }
+
+    fn create_insecure_server(s: VerfploeterService, config: &ServerConfig) -> Server {
+        info!("creating an insecure server (SSL disabled)");
+        Server {
+            grpc_server: Server::create_server_builder(s)
+                .bind("0.0.0.0", config.port)
+                .build()
+                .unwrap(),
+        }
+    }
+
     pub fn start(&mut self) {
         self.grpc_server.start();
 

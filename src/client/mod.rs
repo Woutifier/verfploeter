@@ -11,6 +11,8 @@ use std::sync::Arc;
 mod handlers;
 use self::handlers::ping::{PingInbound, PingOutbound};
 use self::handlers::{ChannelType, TaskHandler};
+use grpcio::ChannelCredentials;
+use grpcio::ChannelCredentialsBuilder;
 use std::time::Duration;
 
 pub struct Client {
@@ -19,14 +21,24 @@ pub struct Client {
     metadata: Metadata,
 }
 
+pub struct ClientConfig<'a> {
+    pub grpc_host: &'a str,
+    pub client_hostname: &'a str,
+    pub certificate: Option<Vec<u8>>
+}
+
 impl Client {
-    pub fn new(grpc_host: &str, client_hostname: String) -> Client {
+    pub fn new(config: &ClientConfig) -> Client {
         // Setup GRPC client
-        let grpc_client = Client::create_grpc_client(&grpc_host);
+        let grpc_client = if config.certificate.is_some() {
+            Client::create_secure_grpc_client(config.grpc_host, config.certificate.clone().unwrap())
+        } else {
+            Client::create_insecure_grpc_client(config.grpc_host)
+        };
 
         // Setup metadata
         let mut metadata = Metadata::new();
-        metadata.set_hostname(client_hostname);
+        metadata.set_hostname(config.client_hostname.to_string());
         metadata.set_version(env!("CARGO_PKG_VERSION").to_string());
 
         // Setup task_handlers
@@ -47,16 +59,33 @@ impl Client {
         }
     }
 
-    fn create_grpc_client(host: &str) -> Arc<VerfploeterClient> {
+    fn create_grpc_channel_builder() -> ChannelBuilder {
         let env = Arc::new(Environment::new(1));
 
-        // Create the channel (with all its parameters)
-        let channel = ChannelBuilder::new(env)
+        ChannelBuilder::new(env)
             .keepalive_time(Duration::from_secs(180))
             .keepalive_timeout(Duration::from_secs(180))
             .max_send_message_len(100 * 1024 * 1024)
             .max_receive_message_len(100 * 1024 * 1024)
-            .connect(host);
+    }
+
+    fn create_secure_grpc_client(host: &str, certificate: Vec<u8>) -> Arc<VerfploeterClient> {
+        info!("attempting to connect to server using a secure connection");
+        // Setup credentials
+        let credentials = ChannelCredentialsBuilder::new()
+            .root_cert(certificate)
+            .build();
+
+        // Create the channel (with all its parameters)
+        let channel = Client::create_grpc_channel_builder().secure_connect(host, credentials);
+
+        Arc::new(VerfploeterClient::new(channel))
+    }
+
+    fn create_insecure_grpc_client(host: &str) -> Arc<VerfploeterClient> {
+        warn!("attempting to connect to server using an insecure connection");
+        // Create the channel (with all its parameters)
+        let channel = Client::create_grpc_channel_builder().connect(host);
 
         Arc::new(VerfploeterClient::new(channel))
     }
