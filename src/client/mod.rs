@@ -123,12 +123,11 @@ impl Client {
                 })
                 .map(|_| {
                     warn!("Task forwarder future (map)");
-                    finish_tx.send(()).unwrap();
                 })
                 .map_err(|e| {
                     warn!("Task forwarder future (map_err): {}", e);
-                    finish_tx.send(()).unwrap();
-                });
+
+                }).and_then(|_| finish_tx.send(()));
 
             self.grpc_client.spawn(f);
 
@@ -139,8 +138,7 @@ impl Client {
             }
 
             // Wait for process to finish
-            finish_rx.map(|_| ()).wait().unwrap();
-            warn!("task stream closed");
+            finish_rx.wait().ok();
 
             // Stop all task handlers
             for (i, v) in &mut self.task_handlers {
@@ -148,6 +146,7 @@ impl Client {
                 v.exit();
                 debug!("exited {} task handler", i);
             }
+            warn!("finished cleanup");
         }
     }
 }
