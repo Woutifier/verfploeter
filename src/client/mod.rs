@@ -121,8 +121,12 @@ impl Client {
                         futures::future::ok(())
                     }
                 })
+                .map(|_| {
+                    warn!("Task forwarder future (map)");
+                    finish_tx.send(()).unwrap();
+                })
                 .map_err(|e| {
-                    debug!("{}", e);
+                    warn!("Task forwarder future (map_err): {}", e);
                     finish_tx.send(()).unwrap();
                 });
 
@@ -136,7 +140,7 @@ impl Client {
 
             // Wait for process to finish
             finish_rx.map(|_| ()).wait().unwrap();
-            debug!("task stream closed");
+            warn!("task stream closed");
 
             // Stop all task handlers
             for (i, v) in &mut self.task_handlers {

@@ -28,6 +28,22 @@ pub struct ServerConfig {
     pub port: u16,
 }
 
+
+#[derive(Debug)]
+pub struct Connection {
+    pub channel: Sender<Task>,
+    pub metadata: Metadata,
+}
+
+#[derive(Clone)]
+struct VerfploeterService {
+    connection_manager: Arc<ConnectionManager>,
+    subscription_list: Arc<RwLock<HashMap<u32, Vec<Sender<TaskResult>>>>>,
+    current_task_id: Arc<Mutex<u32>>, // todo: replace this with AtomicU32 when it stabilizes
+    runtime: Arc<Runtime>,
+}
+
+
 impl Server {
     pub fn new(config: &ServerConfig) -> Server {
         let connection_manager = Arc::new(ConnectionManager::new());
@@ -94,20 +110,6 @@ impl Server {
             info!("Listening on {}:{}", host, port);
         }
     }
-}
-
-#[derive(Debug)]
-pub struct Connection {
-    pub channel: Sender<Task>,
-    pub metadata: Metadata,
-}
-
-#[derive(Clone)]
-struct VerfploeterService {
-    connection_manager: Arc<ConnectionManager>,
-    subscription_list: Arc<RwLock<HashMap<u32, Vec<Sender<TaskResult>>>>>,
-    current_task_id: Arc<Mutex<u32>>, // todo: replace this with AtomicU32 when it stabilizes
-    runtime: Arc<Runtime>,
 }
 
 impl VerfploeterService {
@@ -200,7 +202,7 @@ impl Verfploeter for VerfploeterService {
                     t.set_empty(Empty::new());
                     t
                 })
-                .forward(tx.clone().sink_map_err(|_| ()))
+                .forward(tx.clone().sink_map_err(|_| {}))
                 .map_err(|_| ())
                 .map(|_| ()),
         );
