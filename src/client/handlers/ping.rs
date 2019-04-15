@@ -73,7 +73,6 @@ impl TaskHandler for PingInbound {
 
                     // Don't do anything if we don't have a proper payload
                     if ping_payload.is_none() {
-                        debug!("invalid ping payload");
                         return futures::future::ok(());
                     }
                     let ping_payload = ping_payload.unwrap();
@@ -228,6 +227,7 @@ impl TaskHandler for PingOutbound {
                     .map_err(|_| error!("exiting outbound thread"));
                 let poison = shutdown_rx.map_err(|_| ());
                 handler.select(poison).map_err(|_| ()).wait().unwrap();
+                debug!("Exiting outbound thread");
             }
         });
         self.handle = Some(handle);
