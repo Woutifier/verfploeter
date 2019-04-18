@@ -1,4 +1,5 @@
 syntax = "proto3";
+package verfploeter;
 
 service Verfploeter {
     rpc connect(Metadata) returns (stream Task) {}

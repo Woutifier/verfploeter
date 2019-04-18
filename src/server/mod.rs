@@ -10,7 +10,7 @@ use grpcio::{
     ChannelBuilder, Environment, RpcContext, Server as GrpcServer, ServerBuilder,
     ServerStreamingSink, UnarySink,
 };
-use protobuf::RepeatedField;
+//use protobuf::RepeatedField;
 use std::collections::HashMap;
 use std::ops::AddAssign;
 use std::sync::{Arc, Mutex, RwLock};
@@ -263,7 +263,7 @@ impl Verfploeter for VerfploeterService {
 
         let connections = self.connection_manager.connections.read().unwrap();
         let mut list = ClientList::new();
-        list.set_clients(RepeatedField::from_vec(
+        list.set_clients(
             connections
                 .iter()
                 .map(|(k, v)| {
@@ -273,7 +273,7 @@ impl Verfploeter for VerfploeterService {
                     c
                 })
                 .collect::<Vec<Client>>(),
-        ));
+        );
         ctx.spawn(
             sink.success(list)
                 .map(|_| ())

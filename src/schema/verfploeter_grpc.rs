@@ -20,46 +20,47 @@
 
 const METHOD_VERFPLOETER_CONNECT: ::grpcio::Method<super::verfploeter::Metadata, super::verfploeter::Task> = ::grpcio::Method {
     ty: ::grpcio::MethodType::ServerStreaming,
-    name: "/Verfploeter/connect",
+    name: "/verfploeter.Verfploeter/connect",
     req_mar: ::grpcio::Marshaller { ser: ::grpcio::pb_ser, de: ::grpcio::pb_de },
     resp_mar: ::grpcio::Marshaller { ser: ::grpcio::pb_ser, de: ::grpcio::pb_de },
 };
 
 const METHOD_VERFPLOETER_DO_TASK: ::grpcio::Method<super::verfploeter::ScheduleTask, super::verfploeter::Ack> = ::grpcio::Method {
     ty: ::grpcio::MethodType::Unary,
-    name: "/Verfploeter/do_task",
+    name: "/verfploeter.Verfploeter/do_task",
     req_mar: ::grpcio::Marshaller { ser: ::grpcio::pb_ser, de: ::grpcio::pb_de },
     resp_mar: ::grpcio::Marshaller { ser: ::grpcio::pb_ser, de: ::grpcio::pb_de },
 };
 
 const METHOD_VERFPLOETER_LIST_CLIENTS: ::grpcio::Method<super::verfploeter::Empty, super::verfploeter::ClientList> = ::grpcio::Method {
     ty: ::grpcio::MethodType::Unary,
-    name: "/Verfploeter/list_clients",
+    name: "/verfploeter.Verfploeter/list_clients",
     req_mar: ::grpcio::Marshaller { ser: ::grpcio::pb_ser, de: ::grpcio::pb_de },
     resp_mar: ::grpcio::Marshaller { ser: ::grpcio::pb_ser, de: ::grpcio::pb_de },
 };
 
 const METHOD_VERFPLOETER_SEND_RESULT: ::grpcio::Method<super::verfploeter::TaskResult, super::verfploeter::Ack> = ::grpcio::Method {
     ty: ::grpcio::MethodType::Unary,
-    name: "/Verfploeter/send_result",
+    name: "/verfploeter.Verfploeter/send_result",
     req_mar: ::grpcio::Marshaller { ser: ::grpcio::pb_ser, de: ::grpcio::pb_de },
     resp_mar: ::grpcio::Marshaller { ser: ::grpcio::pb_ser, de: ::grpcio::pb_de },
 };
 
 const METHOD_VERFPLOETER_SUBSCRIBE_RESULT: ::grpcio::Method<super::verfploeter::TaskId, super::verfploeter::TaskResult> = ::grpcio::Method {
     ty: ::grpcio::MethodType::ServerStreaming,
-    name: "/Verfploeter/subscribe_result",
+    name: "/verfploeter.Verfploeter/subscribe_result",
     req_mar: ::grpcio::Marshaller { ser: ::grpcio::pb_ser, de: ::grpcio::pb_de },
     resp_mar: ::grpcio::Marshaller { ser: ::grpcio::pb_ser, de: ::grpcio::pb_de },
 };
 
 const METHOD_VERFPLOETER_TASK_FINISHED: ::grpcio::Method<super::verfploeter::TaskId, super::verfploeter::Ack> = ::grpcio::Method {
     ty: ::grpcio::MethodType::Unary,
-    name: "/Verfploeter/task_finished",
+    name: "/verfploeter.Verfploeter/task_finished",
     req_mar: ::grpcio::Marshaller { ser: ::grpcio::pb_ser, de: ::grpcio::pb_de },
     resp_mar: ::grpcio::Marshaller { ser: ::grpcio::pb_ser, de: ::grpcio::pb_de },
 };
 
+#[derive(Clone)]
 pub struct VerfploeterClient {
     client: ::grpcio::Client,
 }

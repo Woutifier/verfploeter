@@ -1,4 +1,7 @@
-pub mod verfploeter;
+pub mod verfploeter {
+    include!(concat!(env!("OUT_DIR"), "/verfploeter.rs"));
+}
+
 pub mod verfploeter_grpc;
 
 use self::verfploeter::{Address, PingPayload, TaskResult};
@@ -9,8 +12,9 @@ use std::fmt;
 use hmac::{Hmac, Mac};
 use sha2::Sha256;
 
-use protobuf;
-use protobuf::Message;
+//use protobuf;
+//use protobuf::Message;
+use prost::Message;
 use std::error::Error;
 
 type HmacSha256 = Hmac<Sha256>;
@@ -95,6 +99,7 @@ impl Signable<PingPayload> for PingPayload {
         let mut mac = HmacSha256::new_varkey(secret.as_ref())?;
 
         let mut payload_bytes = self.write_to_bytes()?;
+
         mac.input(&payload_bytes);
 
         // `result` has type `MacResult` which is a thin wrapper around array of
@@ -119,7 +124,7 @@ impl Signable<PingPayload> for PingPayload {
         mac.input(value);
         mac.verify(signature)?;
 
-        Ok(protobuf::parse_from_bytes::<PingPayload>(value)?)
+        Ok(Message::decode::<PingPayload>(value)?)
     }
 }
 

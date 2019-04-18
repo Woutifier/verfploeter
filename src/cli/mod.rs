@@ -1,12 +1,13 @@
 use super::schema::verfploeter::{
     Address, Client, Empty, Metadata, Ping, ScheduleTask, TaskId, TaskResult,
 };
+
 use super::schema::verfploeter_grpc::VerfploeterClient;
 use clap::ArgMatches;
 use futures::Stream;
 use grpcio::{ChannelBuilder, Environment};
 use prettytable::{color, format, Attr, Cell, Row, Table};
-use protobuf::RepeatedField;
+//use protobuf::RepeatedField;
 use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
@@ -91,7 +92,8 @@ fn perform_verfploeter_measurement(
     let mut address = Address::new();
     address.set_v4(source_ip);
     ping.set_source_address(address);
-    ping.set_destination_addresses(RepeatedField::from(ips));
+    ping.set_destination_addresses(ips);
+
     let mut client = Client::new();
     let mut metadata = Metadata::new();
     metadata.hostname = client_hostname.to_string();

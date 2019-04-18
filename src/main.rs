@@ -6,7 +6,7 @@ extern crate clap;
 extern crate env_logger;
 extern crate futures;
 extern crate grpcio;
-extern crate protobuf;
+//extern crate protobuf;
 extern crate ratelimit_meter;
 extern crate socket2;
 extern crate tokio;
@@ -17,6 +17,7 @@ extern crate maxminddb;
 extern crate serde_derive;
 extern crate serde_json;
 extern crate sha2;
+
 
 mod cli;
 mod client;
