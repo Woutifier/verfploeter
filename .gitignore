@@ -1,4 +1,7 @@
 /target
+.idea
+.vscode
+keys
 **/*.rs.bk
 *.iml
 do_release.py
