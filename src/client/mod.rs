@@ -14,11 +14,13 @@ use self::handlers::{ChannelType, TaskHandler};
 use grpcio::ChannelCredentials;
 use grpcio::ChannelCredentialsBuilder;
 use std::time::Duration;
+use tokio::runtime::Runtime;
 
 pub struct Client {
     grpc_client: Arc<VerfploeterClient>,
     task_handlers: HashMap<String, Box<dyn TaskHandler>>,
     metadata: Metadata,
+    runtime: Arc<Runtime>,
 }
 
 pub struct ClientConfig<'a> {
@@ -56,6 +58,7 @@ impl Client {
             grpc_client,
             task_handlers,
             metadata,
+            runtime: Arc::new(Runtime::new().unwrap())
         }
     }
 
@@ -129,7 +132,7 @@ impl Client {
 
                 }).and_then(|_| finish_tx.send(()));
 
-            self.grpc_client.spawn(f);
+            self.runtime.executor().spawn(f);
 
             // Start all task handlers
             for (i, v) in &mut self.task_handlers {
