@@ -326,9 +326,9 @@ impl PingOutbound {
     }
 }
 
-fn current_timestamp() -> u32 {
+fn current_timestamp() -> u64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
-        .as_secs() as u32
+        .as_millis() as u64
 }

@@ -2693,7 +2693,7 @@ pub struct PingResult {
     // message fields
     pub source_address: ::protobuf::SingularPtrField<Address>,
     pub destination_address: ::protobuf::SingularPtrField<Address>,
-    pub receive_time: u32,
+    pub receive_time: u64,
     pub payload: ::protobuf::SingularPtrField<PingPayload>,
     pub ttl: u32,
     // special fields
@@ -2772,18 +2772,18 @@ impl PingResult {
         self.destination_address.as_ref().unwrap_or_else(|| Address::default_instance())
     }
 
-    // uint32 receive_time = 3;
+    // uint64 receive_time = 3;
 
     pub fn clear_receive_time(&mut self) {
         self.receive_time = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_receive_time(&mut self, v: u32) {
+    pub fn set_receive_time(&mut self, v: u64) {
         self.receive_time = v;
     }
 
-    pub fn get_receive_time(&self) -> u32 {
+    pub fn get_receive_time(&self) -> u64 {
         self.receive_time
     }
 
@@ -2870,7 +2870,7 @@ impl ::protobuf::Message for PingResult {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
-                    let tmp = is.read_uint32()?;
+                    let tmp = is.read_uint64()?;
                     self.receive_time = tmp;
                 },
                 4 => {
@@ -2930,7 +2930,7 @@ impl ::protobuf::Message for PingResult {
             v.write_to_with_cached_sizes(os)?;
         }
         if self.receive_time != 0 {
-            os.write_uint32(3, self.receive_time)?;
+            os.write_uint64(3, self.receive_time)?;
         }
         if let Some(ref v) = self.payload.as_ref() {
             os.write_tag(4, ::protobuf::wire_format::WireTypeLengthDelimited)?;
@@ -2992,7 +2992,7 @@ impl ::protobuf::Message for PingResult {
                     |m: &PingResult| { &m.destination_address },
                     |m: &mut PingResult| { &mut m.destination_address },
                 ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint64>(
                     "receive_time",
                     |m: &PingResult| { &m.receive_time },
                     |m: &mut PingResult| { &mut m.receive_time },
@@ -3054,7 +3054,7 @@ impl ::protobuf::reflect::ProtobufValue for PingResult {
 pub struct PingPayload {
     // message fields
     pub task_id: u32,
-    pub transmit_time: u32,
+    pub transmit_time: u64,
     pub source_address: ::protobuf::SingularPtrField<Address>,
     pub destination_address: ::protobuf::SingularPtrField<Address>,
     // special fields
@@ -3082,18 +3082,18 @@ impl PingPayload {
         self.task_id
     }
 
-    // uint32 transmit_time = 2;
+    // uint64 transmit_time = 2;
 
     pub fn clear_transmit_time(&mut self) {
         self.transmit_time = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_transmit_time(&mut self, v: u32) {
+    pub fn set_transmit_time(&mut self, v: u64) {
         self.transmit_time = v;
     }
 
-    pub fn get_transmit_time(&self) -> u32 {
+    pub fn get_transmit_time(&self) -> u64 {
         self.transmit_time
     }
 
@@ -3194,7 +3194,7 @@ impl ::protobuf::Message for PingPayload {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
-                    let tmp = is.read_uint32()?;
+                    let tmp = is.read_uint64()?;
                     self.transmit_time = tmp;
                 },
                 3 => {
@@ -3239,7 +3239,7 @@ impl ::protobuf::Message for PingPayload {
             os.write_uint32(1, self.task_id)?;
         }
         if self.transmit_time != 0 {
-            os.write_uint32(2, self.transmit_time)?;
+            os.write_uint64(2, self.transmit_time)?;
         }
         if let Some(ref v) = self.source_address.as_ref() {
             os.write_tag(3, ::protobuf::wire_format::WireTypeLengthDelimited)?;
@@ -3298,7 +3298,7 @@ impl ::protobuf::Message for PingPayload {
                     |m: &PingPayload| { &m.task_id },
                     |m: &mut PingPayload| { &mut m.task_id },
                 ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint64>(
                     "transmit_time",
                     |m: &PingPayload| { &m.transmit_time },
                     |m: &mut PingPayload| { &mut m.transmit_time },
@@ -3382,13 +3382,13 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \n\x05value\"\xd5\x01\n\nPingResult\x12/\n\x0esource_address\x18\x01\x20\
     \x01(\x0b2\x08.AddressR\rsourceAddress\x129\n\x13destination_address\x18\
     \x02\x20\x01(\x0b2\x08.AddressR\x12destinationAddress\x12!\n\x0creceive_\
-    time\x18\x03\x20\x01(\rR\x0breceiveTime\x12&\n\x07payload\x18\x04\x20\
+    time\x18\x03\x20\x01(\x04R\x0breceiveTime\x12&\n\x07payload\x18\x04\x20\
     \x01(\x0b2\x0c.PingPayloadR\x07payload\x12\x10\n\x03ttl\x18\x05\x20\x01(\
     \rR\x03ttl\"\xb7\x01\n\x0bPingPayload\x12\x17\n\x07task_id\x18\x01\x20\
-    \x01(\rR\x06taskId\x12#\n\rtransmit_time\x18\x02\x20\x01(\rR\x0ctransmit\
-    Time\x12/\n\x0esource_address\x18\x03\x20\x01(\x0b2\x08.AddressR\rsource\
-    Address\x129\n\x13destination_address\x18\x04\x20\x01(\x0b2\x08.AddressR\
-    \x12destinationAddress2\xeb\x01\n\x0bVerfploeter\x12\x1f\n\x07connect\
+    \x01(\rR\x06taskId\x12#\n\rtransmit_time\x18\x02\x20\x01(\x04R\x0ctransm\
+    itTime\x12/\n\x0esource_address\x18\x03\x20\x01(\x0b2\x08.AddressR\rsour\
+    ceAddress\x129\n\x13destination_address\x18\x04\x20\x01(\x0b2\x08.Addres\
+    sR\x12destinationAddress2\xeb\x01\n\x0bVerfploeter\x12\x1f\n\x07connect\
     \x12\t.Metadata\x1a\x05.Task\"\00\x01\x12\x20\n\x07do_task\x12\r.Schedul\
     eTask\x1a\x04.Ack\"\0\x12%\n\x0clist_clients\x12\x06.Empty\x1a\x0b.Clien\
     tList\"\0\x12\"\n\x0bsend_result\x12\x0b.TaskResult\x1a\x04.Ack\"\0\x12,\

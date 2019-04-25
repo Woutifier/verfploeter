@@ -14,7 +14,7 @@ pub trait Columnizable {
 #[derive(Debug, Clone)]
 pub enum RowData {
     String(String),
-    Integer(u32),
+    Integer(u64),
     IpAddress(IpAddr),
 }
 
@@ -25,7 +25,7 @@ impl Serialize for RowData {
     {
         match self {
             RowData::String(d) => serializer.serialize_str(d),
-            RowData::Integer(i) => serializer.serialize_u32(*i),
+            RowData::Integer(i) => serializer.serialize_u64(*i),
             RowData::IpAddress(i) => serializer.serialize_str(&i.to_string()),
         }
     }
@@ -55,13 +55,19 @@ impl From<&str> for RowData {
 
 impl From<u32> for RowData {
     fn from(data: u32) -> RowData {
-        RowData::Integer(data)
+        RowData::Integer(data as u64)
     }
 }
 
 impl From<IpAddr> for RowData {
     fn from(data: IpAddr) -> RowData {
         RowData::IpAddress(data)
+    }
+}
+
+impl From<u64> for RowData {
+    fn from(data: u64) -> RowData {
+        RowData::Integer(data)
     }
 }
 

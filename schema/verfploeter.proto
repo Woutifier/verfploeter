@@ -77,14 +77,14 @@ message Result {
 message PingResult {
     Address source_address = 1;
     Address destination_address = 2;
-    uint32 receive_time = 3;
+    uint64 receive_time = 3;
     PingPayload payload = 4;
     uint32 ttl = 5;
 }
 
 message PingPayload {
     uint32 task_id = 1;
-    uint32 transmit_time = 2;
+    uint64 transmit_time = 2;
     Address source_address = 3;
     Address destination_address = 4;
 }
