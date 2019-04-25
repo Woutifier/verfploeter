@@ -215,18 +215,23 @@ impl TaskHandler for PingOutbound {
                         PingOutbound::perform_ping(&i);
 
                         // Wait for a timeout
+                        debug!("sleeping for duration to wait for final packets");
                         thread::sleep(Duration::from_secs(10));
+                        debug!("slept for duration to wait for final packets");
+
                         // After finishing notify the server that the task is finished
                         let mut task_id = TaskId::new();
                         task_id.task_id = i.task_id;
                         grpc_client
                             .task_finished(&task_id.clone())
                             .expect("Could not deliver task finished notification");
+
+                        debug!("finished entire ping process");
                         futures::future::ok(())
                     })
                     .map_err(|_| error!("exiting outbound thread"));
-                let poison = shutdown_rx.map_err(|_| ());
-                handler.select(poison).map_err(|_| ()).wait().unwrap();
+                let poison = shutdown_rx.map_err(|_| warn!("error on shutdown_rx"));
+                handler.select(poison).map_err(|_| warn!("error in handler select")).wait().unwrap();
                 debug!("Exiting outbound thread");
             }
         });
