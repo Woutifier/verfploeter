@@ -200,6 +200,7 @@ pub struct PingOutbound {
     shutdown_rx: Option<oneshot::Receiver<()>>,
     handle: Option<JoinHandle<()>>,
     grpc_client: Arc<VerfploeterClient>,
+    outbound_mutex: Arc<Mutex<u32>>,
 }
 
 impl TaskHandler for PingOutbound {
@@ -208,25 +209,38 @@ impl TaskHandler for PingOutbound {
             let grpc_client = self.grpc_client.clone();
             let rx = self.rx.take().unwrap();
             let shutdown_rx = self.shutdown_rx.take().unwrap();
+            let outbound_mutex = self.outbound_mutex.clone();
             move || {
                 let handler = rx
                     .for_each(|i| {
-                        // Perform the ping
-                        PingOutbound::perform_ping(&i);
+                        debug!("starting ping thread");
+                        thread::spawn({
+                            let outbound_mutex = outbound_mutex.clone();
+                            let grpc_client = grpc_client.clone();
+                            let task = i.clone();
+                            move || {
+                            debug!("ping thread started");
+                            // Perform the ping, locking the outbound_mutex, we only
+                            // want one outbound ping action going at a given time
+                            let guard = outbound_mutex.lock().unwrap();
+                            PingOutbound::perform_ping(&task);
+                            drop(guard);
 
-                        // Wait for a timeout
-                        debug!("sleeping for duration to wait for final packets");
-                        thread::sleep(Duration::from_secs(10));
-                        debug!("slept for duration to wait for final packets");
+                            // Wait for a timeout
+                            debug!("sleeping for duration to wait for final packets");
+                            thread::sleep(Duration::from_secs(10));
+                            debug!("slept for duration to wait for final packets");
 
-                        // After finishing notify the server that the task is finished
-                        let mut task_id = TaskId::new();
-                        task_id.task_id = i.task_id;
-                        grpc_client
-                            .task_finished(&task_id.clone())
-                            .expect("Could not deliver task finished notification");
+                            // After finishing notify the server that the task is finished
+                            let mut task_id = TaskId::new();
+                            task_id.task_id = task.task_id;
+                            grpc_client
+                                .task_finished(&task_id.clone())
+                                .expect("Could not deliver task finished notification");
 
-                        debug!("finished entire ping process");
+                            debug!("finished entire ping process");
+                        }});
+                        
                         futures::future::ok(())
                     })
                     .map_err(|_| error!("exiting outbound thread"));
@@ -264,6 +278,7 @@ impl PingOutbound {
             shutdown_rx: Some(shutdown_rx),
             handle: None,
             grpc_client,
+            outbound_mutex: Arc::new(Mutex::new(0))
         }
     }
 
