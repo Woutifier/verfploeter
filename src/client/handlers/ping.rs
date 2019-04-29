@@ -209,13 +209,13 @@ impl TaskHandler for PingOutbound {
             let grpc_client = self.grpc_client.clone();
             let rx = self.rx.take().unwrap();
             let shutdown_rx = self.shutdown_rx.take().unwrap();
-            let outbound_mutex = self.outbound_mutex.clone();
+            let outbound_mutex = Arc::clone(&self.outbound_mutex);
             move || {
                 let handler = rx
                     .for_each(|i| {
                         debug!("starting ping thread");
                         thread::spawn({
-                            let outbound_mutex = outbound_mutex.clone();
+                            let outbound_mutex = Arc::clone(&outbound_mutex);
                             let grpc_client = grpc_client.clone();
                             let task = i.clone();
                             move || {
@@ -240,7 +240,7 @@ impl TaskHandler for PingOutbound {
 
                             debug!("finished entire ping process");
                         }});
-                        
+
                         futures::future::ok(())
                     })
                     .map_err(|_| error!("exiting outbound thread"));
