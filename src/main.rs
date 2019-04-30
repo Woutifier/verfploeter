@@ -23,6 +23,7 @@ mod client;
 mod net;
 mod schema;
 mod server;
+mod metrics;
 
 use clap::{App, Arg, ArgMatches, SubCommand};
 
@@ -33,6 +34,8 @@ use std::io::BufReader;
 use std::io::Read;
 use std::thread;
 use std::time::Duration;
+use metrics::Prometheus;
+use std::net::SocketAddr;
 
 fn main() {
     // Setup logging
@@ -41,7 +44,19 @@ fn main() {
 
     let matches = parse_cmd();
 
+    if let Some(cli_matches) = matches.subcommand_matches("cli") {
+        cli::execute(cli_matches);
+        return
+    }
+
     info!("Starting verfploeter v{}", env!("CARGO_PKG_VERSION"));
+
+    if let Some(prometheus_addr) = matches.value_of("prometheus") {
+        let addr = prometheus_addr.parse::<SocketAddr>().expect("Missing valid address for prometheus (ip:port)");
+        thread::spawn(move|| {
+            Prometheus::new(addr).start();
+        });
+    }
 
     if let Some(server_matches) = matches.subcommand_matches("server") {
         // Read certificate and private key from filesystem
@@ -94,8 +109,6 @@ fn main() {
         // Start the client
         let c = client::Client::new(&config);
         c.start();
-    } else if let Some(cli_matches) = matches.subcommand_matches("cli") {
-        cli::execute(cli_matches);
     } else {
         error!("run with --help to see options");
     }
@@ -115,6 +128,7 @@ fn parse_cmd<'a>() -> ArgMatches<'a> {
         .version(env!("CARGO_PKG_VERSION"))
         .author("Wouter B. de Vries <w.b.devries@utwente.nl")
         .about("Performs measurements")
+        .arg(Arg::with_name("prometheus").short("p").long("prometheus").takes_value(true).required(false).help("Enables prometheus metrics"))
         .subcommand(SubCommand::with_name("server").about("Launches the verfploeter server")
             .arg(Arg::with_name("certificate").short("c").takes_value(true).help("Certificate to use for SSL connection from clients (PEM-encoded file)").required(false))
             .arg(Arg::with_name("private-key").short("P").takes_value(true).help("Private key to use for SSL connection from clients (PEM-encoded file)").required(false))

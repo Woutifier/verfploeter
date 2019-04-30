@@ -3,11 +3,11 @@ use crate::net::{IPv4Packet, PacketPayload};
 use crate::schema::verfploeter::{Client, Metadata, PingPayload, PingResult, Result, TaskResult};
 use crate::schema::verfploeter_grpc::VerfploeterClient;
 use crate::schema::Signable;
+
 use socket2::{Domain, Protocol, Socket, Type};
 use std::sync::Arc;
 use std::thread;
 use std::thread::JoinHandle;
-
 use futures::sync::mpsc::{channel, Receiver, Sender};
 use futures::sync::oneshot;
 use futures::Future;
@@ -17,6 +17,20 @@ use std::net::Shutdown;
 use std::sync::Mutex;
 use std::time::Duration;
 use std::u32;
+use lazy_static::lazy_static;
+use prometheus::{IntCounter, register_int_counter, register_counter, opts};
+
+// Define Prometheus metrics
+lazy_static! {
+    static ref PACKETS_RECEIVED: IntCounter =
+        register_int_counter!("client_ping_inbound_packets_received", "Number of packets received").unwrap();
+    static ref PACKETS_PROCESSED_VALID: IntCounter =
+        register_int_counter!("client_ping_inbound_packets_processed_valid", "Number of valid packets processed").unwrap();
+    static ref PACKETS_PROCESSED_INVALID: IntCounter =
+        register_int_counter!("client_ping_inbound_packets_processed_invalid", "Number of invalid packets processed").unwrap();
+    static ref PACKETS_TRANSMITTED: IntCounter =
+        register_int_counter!("client_ping_inbound_packets_transmitted", "Number of packets transmitted").unwrap();
+}
 
 pub struct PingInbound {
     handles: Vec<JoinHandle<()>>,
@@ -39,6 +53,7 @@ impl TaskHandler for PingInbound {
             move || {
                 let mut buffer: Vec<u8> = vec![0; 1500];
                 while let Ok(result) = socket.recv(&mut buffer) {
+                    PACKETS_RECEIVED.inc();
                     if result == 0 {
                         break;
                     }
@@ -74,8 +89,10 @@ impl TaskHandler for PingInbound {
 
                     // Don't do anything if we don't have a proper payload
                     if ping_payload.is_none() {
+                        PACKETS_PROCESSED_INVALID.inc();
                         return futures::future::ok(());
                     }
+                    PACKETS_PROCESSED_VALID.inc();
                     let ping_payload = ping_payload.unwrap();
 
                     let mut result = Result::new();
@@ -141,6 +158,8 @@ impl TaskHandler for PingInbound {
                             if !tr.get_result_list().is_empty() {
                                 if let Err(e) = grpc_client.send_result(&tr) {
                                     error!("failed to send result to server: {}", e);
+                                } else {
+                                    PACKETS_TRANSMITTED.inc_by(tr.get_result_list().len() as i64);
                                 }
                             }
                             tr = TaskResult::new();
@@ -154,6 +173,8 @@ impl TaskHandler for PingInbound {
                     if !tr.get_result_list().is_empty() {
                         if let Err(e) = grpc_client.send_result(&tr) {
                             error!("failed to send result to server: {}", e);
+                        } else {
+                            PACKETS_TRANSMITTED.inc_by(tr.get_result_list().len() as i64);
                         }
                     }
                 }
