@@ -9,9 +9,9 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 mod handlers;
-use self::handlers::ping::{PingInbound, PingOutbound};
+use self::handlers::ping_inbound::PingInbound;
+use self::handlers::ping_outbound::PingOutbound;
 use self::handlers::{ChannelType, TaskHandler};
-use grpcio::ChannelCredentials;
 use grpcio::ChannelCredentialsBuilder;
 use std::time::Duration;
 use tokio::runtime::Runtime;
@@ -26,7 +26,7 @@ pub struct Client {
 pub struct ClientConfig<'a> {
     pub grpc_host: &'a str,
     pub client_hostname: &'a str,
-    pub certificate: Option<Vec<u8>>
+    pub certificate: Option<Vec<u8>>,
 }
 
 impl Client {
@@ -58,7 +58,7 @@ impl Client {
             grpc_client,
             task_handlers,
             metadata,
-            runtime: Arc::new(Runtime::new().unwrap())
+            runtime: Arc::new(Runtime::new().unwrap()),
         }
     }
 
@@ -129,8 +129,8 @@ impl Client {
                 })
                 .map_err(|e| {
                     warn!("Task forwarder future (map_err): {}", e);
-
-                }).and_then(|_| finish_tx.send(()));
+                })
+                .and_then(|_| finish_tx.send(()));
 
             self.runtime.executor().spawn(f);
 

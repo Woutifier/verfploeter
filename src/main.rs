@@ -26,13 +26,13 @@ mod server;
 
 use clap::{App, Arg, ArgMatches, SubCommand};
 
+use crate::client::ClientConfig;
 use crate::server::ServerConfig;
 use std::fs::File;
 use std::io::BufReader;
 use std::io::Read;
 use std::thread;
 use std::time::Duration;
-use crate::client::ClientConfig;
 
 fn main() {
     // Setup logging
@@ -59,7 +59,11 @@ fn main() {
         let config = ServerConfig {
             certificate,
             private_key,
-            port: server_matches.value_of("port").unwrap_or("50001").parse::<u16>().expect("Port should be a 16-bits integer"),
+            port: server_matches
+                .value_of("port")
+                .unwrap_or("50001")
+                .parse::<u16>()
+                .expect("Port should be a 16-bits integer"),
         };
 
         // Start the server
@@ -73,9 +77,7 @@ fn main() {
     } else if let Some(client_matches) = matches.subcommand_matches("client") {
         // Read certificate
         let mut certificate = None;
-        if let Some(certificate_path) =
-            client_matches.value_of("certificate")
-         {
+        if let Some(certificate_path) = client_matches.value_of("certificate") {
             certificate = read_file_content(certificate_path);
         }
 
@@ -86,7 +88,7 @@ fn main() {
         let config = ClientConfig {
             grpc_host,
             client_hostname,
-            certificate
+            certificate,
         };
 
         // Start the client

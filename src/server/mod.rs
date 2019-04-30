@@ -4,7 +4,6 @@ use super::schema::verfploeter::{
 use super::schema::verfploeter_grpc::{self, Verfploeter};
 use futures::sync::mpsc::{channel, Sender};
 use futures::*;
-use grpcio::ChannelCredentialsBuilder;
 use grpcio::ServerCredentialsBuilder;
 use grpcio::{
     ChannelBuilder, Environment, RpcContext, Server as GrpcServer, ServerBuilder,
@@ -28,7 +27,6 @@ pub struct ServerConfig {
     pub port: u16,
 }
 
-
 #[derive(Debug)]
 pub struct Connection {
     pub channel: Sender<Task>,
@@ -42,7 +40,6 @@ struct VerfploeterService {
     current_task_id: Arc<Mutex<u32>>, // todo: replace this with AtomicU32 when it stabilizes
     runtime: Arc<Runtime>,
 }
-
 
 impl Server {
     pub fn new(config: &ServerConfig) -> Server {
