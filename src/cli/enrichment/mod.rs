@@ -91,6 +91,9 @@ impl Columnizable for TaskResult {
                 let mut row: HashMap<String, RowData> = HashMap::new();
                 row.insert("task_id".to_string(), task_id.into());
                 row.insert("client_id".to_string(), client_id.into());
+                row.insert(
+                    "transmit_time".to_string(),
+                    ping.get_payload().get_transmit_time().into());
                 row.insert("receive_time".to_string(), ping.get_receive_time().into());
                 row.insert(
                     "send_receive_time_diff".to_string(),

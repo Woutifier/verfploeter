@@ -163,7 +163,9 @@ fn perform_verfploeter_measurement(
                             if idx != 0 {
                                 print!(",");
                             }
-                            print!("{}", entry[header]);
+                            if entry.contains_key(header) {
+                                print!("{}", entry[header]);
+                            }
                         }
                         println!();
                     }
