@@ -4,27 +4,33 @@ use crate::schema::verfploeter::{PingPayload, Task, TaskId};
 use crate::schema::verfploeter_grpc::VerfploeterClient;
 use crate::schema::Signable;
 
-use socket2::{Domain, Protocol, Socket, Type};
-use std::thread;
-use std::thread::JoinHandle;
 use futures::sync::mpsc::{channel, Receiver, Sender};
 use futures::sync::oneshot;
 use futures::{Future, Stream};
+use lazy_static::lazy_static;
+use prometheus::{opts, register_counter, register_int_counter, IntCounter};
 use ratelimit_meter::{DirectRateLimiter, LeakyBucket};
+use socket2::{Domain, Protocol, Socket, Type};
 use std::net::{Ipv4Addr, SocketAddr};
 use std::num::NonZeroU32;
 use std::sync::{Arc, Mutex};
+use std::thread;
+use std::thread::JoinHandle;
 use std::time::Duration;
 use std::u32;
-use lazy_static::lazy_static;
-use prometheus::{IntCounter, register_int_counter, register_counter, opts};
 
 // Define Prometheus metrics
 lazy_static! {
-    static ref PACKETS_TRANSMITTED_OK: IntCounter =
-        register_int_counter!("client_ping_outbound_packets_transmitted_ok", "Number of packets transmitted successfully").unwrap();
-    static ref PACKETS_TRANSMITTED_ERROR: IntCounter =
-        register_int_counter!("client_ping_outbound_packets_transmitted_error", "Number of packets transmitted which failed").unwrap();
+    static ref PACKETS_TRANSMITTED_OK: IntCounter = register_int_counter!(
+        "client_ping_outbound_packets_transmitted_ok",
+        "Number of packets transmitted successfully"
+    )
+    .unwrap();
+    static ref PACKETS_TRANSMITTED_ERROR: IntCounter = register_int_counter!(
+        "client_ping_outbound_packets_transmitted_error",
+        "Number of packets transmitted which failed"
+    )
+    .unwrap();
 }
 
 pub struct PingOutbound {

@@ -15,6 +15,7 @@ pub trait Columnizable {
 pub enum RowData {
     String(String),
     Integer(u64),
+    Float(f64),
     IpAddress(IpAddr),
 }
 
@@ -26,6 +27,7 @@ impl Serialize for RowData {
         match self {
             RowData::String(d) => serializer.serialize_str(d),
             RowData::Integer(i) => serializer.serialize_u64(*i),
+            RowData::Float(i) => serializer.serialize_f64(*i),
             RowData::IpAddress(i) => serializer.serialize_str(&i.to_string()),
         }
     }
@@ -36,6 +38,7 @@ impl fmt::Display for RowData {
         match self {
             RowData::String(d) => write!(f, "{}", d),
             RowData::Integer(i) => write!(f, "{}", i),
+            RowData::Float(i) => write!(f, "{}", i),
             RowData::IpAddress(i) => write!(f, "{}", i),
         }
     }
@@ -71,6 +74,12 @@ impl From<u64> for RowData {
     }
 }
 
+impl From<f64> for RowData {
+    fn from(data: f64) -> RowData {
+        RowData::Float(data)
+    }
+}
+
 impl Columnizable for TaskResult {
     fn get_data(&self) -> Vec<HashMap<String, RowData>> {
         let task_id = self.get_task_id();
@@ -82,11 +91,13 @@ impl Columnizable for TaskResult {
                 let mut row: HashMap<String, RowData> = HashMap::new();
                 row.insert("task_id".to_string(), task_id.into());
                 row.insert("client_id".to_string(), client_id.into());
-                row.insert(
-                    "transmit_time".to_string(),
-                    ping.get_payload().get_transmit_time().into(),
-                );
                 row.insert("receive_time".to_string(), ping.get_receive_time().into());
+                row.insert(
+                    "send_receive_time_diff".to_string(),
+                    (((ping.get_receive_time() - ping.get_payload().get_transmit_time()) as f64)
+                        / 1_000_000f64)
+                        .into(),
+                );
                 row.insert(
                     "source_address".to_string(),
                     IpAddr::from(ping.get_source_address()).into(),

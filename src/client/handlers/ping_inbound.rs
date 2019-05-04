@@ -4,32 +4,44 @@ use crate::schema::verfploeter::{Client, Metadata, PingPayload, PingResult, Resu
 use crate::schema::verfploeter_grpc::VerfploeterClient;
 use crate::schema::Signable;
 
-use socket2::{Domain, Protocol, Socket, Type};
-use std::sync::Arc;
-use std::thread;
-use std::thread::JoinHandle;
 use futures::sync::mpsc::{channel, Receiver, Sender};
 use futures::sync::oneshot;
 use futures::Future;
 use futures::Sink;
 use futures::Stream;
+use lazy_static::lazy_static;
+use prometheus::{opts, register_counter, register_int_counter, IntCounter};
+use socket2::{Domain, Protocol, Socket, Type};
 use std::net::Shutdown;
+use std::sync::Arc;
 use std::sync::Mutex;
+use std::thread;
+use std::thread::JoinHandle;
 use std::time::Duration;
 use std::u32;
-use lazy_static::lazy_static;
-use prometheus::{IntCounter, register_int_counter, register_counter, opts};
 
 // Define Prometheus metrics
 lazy_static! {
-    static ref PACKETS_RECEIVED: IntCounter =
-        register_int_counter!("client_ping_inbound_packets_received", "Number of packets received").unwrap();
-    static ref PACKETS_PROCESSED_VALID: IntCounter =
-        register_int_counter!("client_ping_inbound_packets_processed_valid", "Number of valid packets processed").unwrap();
-    static ref PACKETS_PROCESSED_INVALID: IntCounter =
-        register_int_counter!("client_ping_inbound_packets_processed_invalid", "Number of invalid packets processed").unwrap();
-    static ref PACKETS_TRANSMITTED: IntCounter =
-        register_int_counter!("client_ping_inbound_packets_transmitted", "Number of packets transmitted").unwrap();
+    static ref PACKETS_RECEIVED: IntCounter = register_int_counter!(
+        "client_ping_inbound_packets_received",
+        "Number of packets received"
+    )
+    .unwrap();
+    static ref PACKETS_PROCESSED_VALID: IntCounter = register_int_counter!(
+        "client_ping_inbound_packets_processed_valid",
+        "Number of valid packets processed"
+    )
+    .unwrap();
+    static ref PACKETS_PROCESSED_INVALID: IntCounter = register_int_counter!(
+        "client_ping_inbound_packets_processed_invalid",
+        "Number of invalid packets processed"
+    )
+    .unwrap();
+    static ref PACKETS_TRANSMITTED: IntCounter = register_int_counter!(
+        "client_ping_inbound_packets_transmitted",
+        "Number of packets transmitted"
+    )
+    .unwrap();
 }
 
 pub struct PingInbound {
@@ -44,7 +56,7 @@ pub struct PingInbound {
 
 impl TaskHandler for PingInbound {
     fn start(&mut self) {
-        let (tx, rx): (Sender<IPv4Packet>, Receiver<IPv4Packet>) = channel(1024);
+        let (tx, rx) = channel(1024);
 
         // The packet receiver thread takes the packets from the actual socket
         // and puts them in a channel to be processed
@@ -60,7 +72,7 @@ impl TaskHandler for PingInbound {
 
                     let packet = IPv4Packet::from(&buffer[..result]);
                     tx.clone()
-                        .send(packet)
+                        .send((current_timestamp(), packet))
                         .wait()
                         .expect("unable to send packet to tx channel");
                 }
@@ -73,10 +85,7 @@ impl TaskHandler for PingInbound {
         let packet_processor_handle = thread::spawn({
             let result_queue = self.result_queue.clone();
             move || {
-                rx.for_each(|packet| {
-                    // Note the receive time
-                    let receive_time = current_timestamp();
-
+                rx.for_each(|(receive_time, packet)| {
                     // Extract payload
                     let mut ping_payload = None;
                     if let PacketPayload::ICMPv4 { value } = packet.payload {

@@ -20,22 +20,22 @@ extern crate sha2;
 
 mod cli;
 mod client;
+mod metrics;
 mod net;
 mod schema;
 mod server;
-mod metrics;
 
 use clap::{App, Arg, ArgMatches, SubCommand};
 
 use crate::client::ClientConfig;
 use crate::server::ServerConfig;
+use metrics::Prometheus;
 use std::fs::File;
 use std::io::BufReader;
 use std::io::Read;
+use std::net::SocketAddr;
 use std::thread;
 use std::time::Duration;
-use metrics::Prometheus;
-use std::net::SocketAddr;
 
 fn main() {
     // Setup logging
@@ -46,14 +46,16 @@ fn main() {
 
     if let Some(cli_matches) = matches.subcommand_matches("cli") {
         cli::execute(cli_matches);
-        return
+        return;
     }
 
     info!("Starting verfploeter v{}", env!("CARGO_PKG_VERSION"));
 
     if let Some(prometheus_addr) = matches.value_of("prometheus") {
-        let addr = prometheus_addr.parse::<SocketAddr>().expect("Missing valid address for prometheus (ip:port)");
-        thread::spawn(move|| {
+        let addr = prometheus_addr
+            .parse::<SocketAddr>()
+            .expect("Missing valid address for prometheus (ip:port)");
+        thread::spawn(move || {
             Prometheus::new(addr).start();
         });
     }
