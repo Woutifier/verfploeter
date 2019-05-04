@@ -127,6 +127,7 @@ impl Columnizable for TaskResult {
             "client_id",
             "transmit_time",
             "receive_time",
+            "send_receive_time_diff",
             "source_address",
             "destination_address",
             "meta_source_address",
