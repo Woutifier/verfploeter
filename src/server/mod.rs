@@ -299,7 +299,7 @@ impl Verfploeter for VerfploeterService {
 
         let f = rx
             .map(|i| (i, grpcio::WriteFlags::default()))
-            .forward(sink.sink_map_err(|_| ()))
+            .forward(sink.sink_map_err(|e| error!("failure in result sink: {}", e)))
             .map(|_| ())
             .map_err(|_| error!("closed result stream"));
 
