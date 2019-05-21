@@ -23,7 +23,8 @@ use crate::cli::enrichment::{
 pub fn execute(args: &ArgMatches) {
     let server = args.value_of("server").unwrap();
     let env = Arc::new(Environment::new(1));
-    let channel = ChannelBuilder::new(env).connect(server);
+    let channel = ChannelBuilder::new(env)
+        .max_receive_message_len(100 * 1024 * 1024).connect(server);
     let grpc_client = VerfploeterClient::new(channel);
 
     if args.subcommand_matches("client-list").is_some() {
@@ -171,7 +172,7 @@ fn perform_verfploeter_measurement(
                     }
                 }
             })
-            .map_err(|_| ())
+            .map_err(|e| error!("stream failed: {}", e))
             .wait()
             .for_each(drop);
     } else {
